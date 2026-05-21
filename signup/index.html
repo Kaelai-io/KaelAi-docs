@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get Your KaelAi API Key - Free, instant access</title>
+  <meta name="description" content="Sign up for a KaelAi API key. 100 free queries included. Shield mode available at $0.05/query from your first Shield call.">
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    .signup-wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+    .signup-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+    }
+    .signup-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .signup-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 10px 14px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+    .signup-input:focus {
+      border-color: var(--green);
+    }
+    .signup-field {
+      margin-bottom: 20px;
+    }
+    .signup-field-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+    .signup-error {
+      background: var(--red-subtle);
+      border: 1px solid var(--red);
+      border-radius: var(--radius-sm);
+      color: var(--red);
+      font-size: 0.85rem;
+      padding: 10px 14px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .signup-success {
+      display: none;
+      text-align: center;
+      padding: 12px 0;
+    }
+    .signup-key-box {
+      background: var(--bg);
+      border: 1px solid var(--green);
+      border-radius: var(--radius-sm);
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--green);
+      padding: 12px 14px;
+      word-break: break-all;
+      margin: 16px 0;
+      cursor: pointer;
+      position: relative;
+      user-select: all;
+    }
+    .copy-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .signup-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner container">
+    <a href="/" class="nav-logo">Kael<span style="color:var(--green);">Ai</span></a>
+    <div class="nav-links">
+      <a href="/agent">Agent</a>
+      <a href="/shield">Shield</a>
+      <a href="/docs">Docs</a>
+      <a href="/pricing">Pricing</a>
+    </div>
+    <a href="/signup" class="btn btn-primary btn-sm nav-cta">Get API Key</a>
+    <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="mobile-nav">
+    <a href="/agent">Agent</a>
+    <a href="/shield">Shield</a>
+    <a href="/docs">Docs</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/signup" class="btn btn-primary">Get API Key</a>
+  </div>
+</nav>
+
+<div class="signup-wrap">
+
+  <!-- Context badge driven by ?from= param -->
+  <div style="text-align:center; margin-bottom: 28px;">
+    <div class="hero-tag" id="signup-context-tag">Get Your API Key</div>
+    <h1 style="font-size: 1.9rem; margin: 12px 0 8px;">Start building in 30 seconds</h1>
+    <p style="color: var(--text-2); font-size: 0.95rem;" id="signup-context-sub">
+      100 free Agent queries included. Shield available at $0.05/query from your first Shield call. No credit card required to start.
+    </p>
+  </div>
+
+  <div class="signup-card">
+
+    <!-- Success state -->
+    <div class="signup-success" id="signup-success">
+      <div style="font-size: 2rem; margin-bottom: 12px;">✅</div>
+      <h2 style="font-size: 1.3rem; margin-bottom: 8px;">Your API key is ready</h2>
+      <p style="color: var(--text-2); font-size: 0.88rem; margin-bottom: 4px;">
+        Copy it now - it won't be shown again.
+      </p>
+      <div class="signup-key-box" id="key-display" onclick="copyKey()"></div>
+      <div class="copy-hint" id="copy-hint">Click to copy</div>
+      <hr class="signup-divider">
+      <p style="color: var(--text-2); font-size: 0.85rem; margin-bottom: 16px;">
+        Add it as a header on every request: <code style="color:var(--green);">Authorization: Bearer YOUR_KEY</code>
+      </p>
+      <a href="/docs" class="btn btn-primary" style="width:100%; justify-content:center;">View API Docs</a>
+    </div>
+
+    <!-- Form state -->
+    <form id="signup-form" onsubmit="handleSignup(event)">
+      <div class="signup-error" id="signup-error"></div>
+
+      <div class="signup-field">
+        <label class="signup-label" for="name">Your name</label>
+        <input class="signup-input" type="text" id="name" name="name"
+               placeholder="Satoshi Nakamoto" required autocomplete="name">
+      </div>
+
+      <div class="signup-field">
+        <label class="signup-label" for="email">Email address</label>
+        <input class="signup-input" type="email" id="email" name="email"
+               placeholder="you@protocol.xyz" required autocomplete="email">
+        <div class="signup-field-hint">Your API key will be tied to this address.</div>
+      </div>
+
+      <div class="signup-field">
+        <label class="signup-label" for="use_case">What are you building? <span style="color:var(--muted); font-weight:400;">(optional)</span></label>
+        <input class="signup-input" type="text" id="use_case" name="use_case"
+               placeholder="DeFi risk scoring, agent wallet monitoring...">
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submit-btn"
+              style="width:100%; justify-content:center; padding: 13px 22px; font-size: 0.95rem;">
+        Get My API Key
+      </button>
+
+      <p style="text-align:center; font-size:0.78rem; color:var(--muted); margin-top: 14px;">
+        By signing up you agree to our
+        <a href="mailto:hello@kaelai.io" style="color:var(--text-2);">terms of service</a>.
+        No spam. No credit card required.
+      </p>
+    </form>
+
+  </div>
+
+  <div style="text-align:center; margin-top: 24px;">
+    <p style="font-size: 0.82rem; color: var(--muted);">
+      Already have a key?
+      <a href="/docs" style="color:var(--text-2);">View the docs</a> or
+      <a href="mailto:hello@kaelai.io" style="color:var(--text-2);">contact support</a>.
+    </p>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">Kael<span style="color:var(--green);">Ai</span></div>
+    <div class="footer-links">
+      <a href="mailto:hello@kaelai.io">hello@kaelai.io</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ── Context badge from ?from= query param ────────────────────────────────
+  (function() {
+    const from = new URLSearchParams(window.location.search).get('from') || '';
+    const tag  = document.getElementById('signup-context-tag');
+    const sub  = document.getElementById('signup-context-sub');
+    if (from === 'shield' || from === 'shield-payg') {
+      tag.textContent = 'Shield PAYG - $0.05/query';
+      tag.style.background = 'var(--amber-subtle)';
+      tag.style.color = 'var(--amber)';
+      tag.style.borderColor = 'var(--amber-dim)';
+      sub.textContent = 'Get an API key and start scoring wallets with Shield immediately. ' +
+        'No subscription needed - billed at $0.05 per Shield query. ' +
+        '100 free Agent queries also included.';
+    } else if (from === 'agent') {
+      tag.textContent = 'Agent - 100 free queries';
+      sub.textContent = '100 free Agent queries included on sign-up. No credit card required.';
+    }
+  })();
+
+  // ── Hamburger toggle ─────────────────────────────────────────────────────
+  document.getElementById('hamburger').addEventListener('click', function() {
+    document.getElementById('mobile-nav').classList.toggle('open');
+  });
+
+  // ── Form submission ──────────────────────────────────────────────────────
+  async function handleSignup(e) {
+    e.preventDefault();
+    const btn   = document.getElementById('submit-btn');
+    const errEl = document.getElementById('signup-error');
+    errEl.style.display = 'none';
+    btn.disabled    = true;
+    btn.textContent = 'Creating your key...';
+
+    const body = {
+      name:     document.getElementById('name').value.trim(),
+      email:    document.getElementById('email').value.trim(),
+      use_case: document.getElementById('use_case').value.trim() || null,
+    };
+
+    try {
+      const res  = await fetch('/api/v1/keys/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errEl.textContent   = data.detail || 'Something went wrong. Please try again.';
+        errEl.style.display = 'block';
+        btn.disabled    = false;
+        btn.textContent = 'Get My API Key';
+        return;
+      }
+
+      // Show success
+      document.getElementById('signup-form').style.display = 'none';
+      const success = document.getElementById('signup-success');
+      const keyEl   = document.getElementById('key-display');
+      keyEl.textContent       = data.api_key;
+      success.style.display   = 'block';
+
+    } catch (err) {
+      errEl.textContent   = 'Network error. Please check your connection and try again.';
+      errEl.style.display = 'block';
+      btn.disabled    = false;
+      btn.textContent = 'Get My API Key';
+    }
+  }
+
+  function copyKey() {
+    const key  = document.getElementById('key-display').textContent;
+    const hint = document.getElementById('copy-hint');
+    navigator.clipboard.writeText(key).then(() => {
+      hint.textContent = 'Copied!';
+      hint.style.color = 'var(--green)';
+      setTimeout(() => {
+        hint.textContent = 'Click to copy';
+        hint.style.color = '';
+      }, 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
