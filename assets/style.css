@@ -1,5 +1,5 @@
 /* ============================================================
-   KaelAi — Global Stylesheet
+   KaelAi - Global Stylesheet
    Design system: Dark DeFi / Agent Intelligence
    ============================================================ */
 
@@ -311,6 +311,7 @@ code {
 .nav-mobile .btn {
   margin-top: 8px;
   justify-content: center;
+  color: #000;
 }
 
 /* ── Hero ─────────────────────────────────────────────────── */

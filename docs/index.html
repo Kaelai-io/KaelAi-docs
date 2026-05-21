@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KaelAi API Reference — Docs</title>
+  <title>KaelAi API Reference - Docs</title>
   <meta name="description" content="KaelAi API documentation. Full reference for Agent mode wallet trust scoring and Shield mode DeFi threat detection.">
   <link rel="stylesheet" href="../assets/style.css">
 </head>
@@ -60,7 +60,7 @@
           </tr>
           <tr>
             <td>Output</td>
-            <td>KAT Score 0–100, grade, reasoning</td>
+            <td>KAT Score 0-100, grade, reasoning</td>
             <td>Five-tier action + threat classification</td>
           </tr>
           <tr>
@@ -76,7 +76,7 @@
           <tr>
             <td>Registry check</td>
             <td>No</td>
-            <td>Yes — exploit + trusted registry</td>
+            <td>Yes - exploit + trusted registry</td>
           </tr>
           <tr>
             <td>Risk flags</td>
@@ -150,7 +150,7 @@
       <!-- Agent Score Endpoint -->
       <section id="agent-score">
         <h2>POST /api/v1/score</h2>
-        <p>Score a wallet address. Without a <code>mode</code> parameter, defaults to Agent mode — returning a KAT Trust Score, grade, and behavioral breakdown.</p>
+        <p>Score a wallet address. Without a <code>mode</code> parameter, defaults to Agent mode - returning a KAT Trust Score, grade, and behavioral breakdown.</p>
 
         <h3>Request Body</h3>
         <div class="table-wrap">
@@ -180,7 +180,7 @@
                 <td><code>tx_limit</code></td>
                 <td>integer</td>
                 <td>No</td>
-                <td>Number of transactions to analyze. Default: 50. Range: 10–100.</td>
+                <td>Number of transactions to analyze. Default: 50. Range: 10-100.</td>
               </tr>
               <tr>
                 <td><code>force_refresh</code></td>
@@ -195,7 +195,7 @@
         <h3>Example Request</h3>
         <div class="code-block">
           <div class="code-block-header">
-            <span class="code-block-lang">curl — Agent Mode</span>
+            <span class="code-block-lang">curl - Agent Mode</span>
             <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
           </div>
           <pre><span class="kw">curl</span> -X POST <span class="url">https://api.kaelai.io/api/v1/score</span> \
@@ -239,7 +239,7 @@
               <tr>
                 <td><code>overall_score</code></td>
                 <td>integer</td>
-                <td>KAT Trust Score 0–100 (equal-weight average of all 5 dimensions)</td>
+                <td>KAT Trust Score 0-100 (equal-weight average of all 5 dimensions)</td>
               </tr>
               <tr>
                 <td><code>grade</code></td>
@@ -259,27 +259,27 @@
               <tr>
                 <td><code>dimensions.transaction_longevity</code></td>
                 <td>integer</td>
-                <td>TL score 0–100 — wallet age and transaction history depth</td>
+                <td>TL score 0-100 - wallet age and transaction history depth</td>
               </tr>
               <tr>
                 <td><code>dimensions.behavioral_consistency</code></td>
                 <td>integer</td>
-                <td>BC score 0–100 — pattern stability over time</td>
+                <td>BC score 0-100 - pattern stability over time</td>
               </tr>
               <tr>
                 <td><code>dimensions.counterparty_quality</code></td>
                 <td>integer</td>
-                <td>CQ score 0–100 — trustworthiness of interaction network</td>
+                <td>CQ score 0-100 - trustworthiness of interaction network</td>
               </tr>
               <tr>
                 <td><code>dimensions.wallet_activity</code></td>
                 <td>integer</td>
-                <td>WA score 0–100 — depth and breadth of protocol engagement</td>
+                <td>WA score 0-100 - depth and breadth of protocol engagement</td>
               </tr>
               <tr>
                 <td><code>dimensions.value_stability</code></td>
                 <td>integer</td>
-                <td>VS score 0–100 — transaction value variance and patterns</td>
+                <td>VS score 0-100 - transaction value variance and patterns</td>
               </tr>
               <tr>
                 <td><code>recommendation</code></td>
@@ -337,7 +337,7 @@
         <h3>GET /api/v1/score/history</h3>
         <div class="code-block">
           <div class="code-block-header">
-            <span class="code-block-lang">curl — Score History</span>
+            <span class="code-block-lang">curl - Score History</span>
             <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
           </div>
           <pre><span class="kw">curl</span> -G <span class="url">https://api.kaelai.io/api/v1/score/history</span> \
@@ -402,7 +402,7 @@
                 <td><code>tx_limit</code></td>
                 <td>integer</td>
                 <td>No</td>
-                <td>Transactions to analyze. Default: 50. Range: 10–100.</td>
+                <td>Transactions to analyze. Default: 50. Range: 10-100.</td>
               </tr>
               <tr>
                 <td><code>force_refresh</code></td>
@@ -417,7 +417,7 @@
         <h3>Example Request</h3>
         <div class="code-block">
           <div class="code-block-header">
-            <span class="code-block-lang">curl — Shield Mode</span>
+            <span class="code-block-lang">curl - Shield Mode</span>
             <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
           </div>
           <pre><span class="kw">curl</span> -X POST <span class="url">https://api.kaelai.io/api/v1/score</span> \
@@ -453,7 +453,7 @@
               <tr>
                 <td><code>overall_score</code></td>
                 <td>integer</td>
-                <td>Shield-weighted score 0–100 (TL 30%, BC 25%, CQ 20%, WA 15%, VS 10%)</td>
+                <td>Shield-weighted score 0-100 (TL 30%, BC 25%, CQ 20%, WA 15%, VS 10%)</td>
               </tr>
               <tr>
                 <td><code>agent_score</code></td>
@@ -477,7 +477,7 @@
               <tr>
                 <td><code>threat_confidence</code></td>
                 <td>float</td>
-                <td>0.0–1.0 confidence in the threat classification. Registry matches always 0.99.</td>
+                <td>0.0-1.0 confidence in the threat classification. Registry matches always 0.99.</td>
               </tr>
               <tr>
                 <td><code>shield_flags</code></td>
@@ -524,7 +524,7 @@
         <h2>Shield Response Example</h2>
         <div class="code-block">
           <div class="code-block-header">
-            <span class="code-block-lang">JSON — Registry Match (BLOCK)</span>
+            <span class="code-block-lang">JSON - Registry Match (BLOCK)</span>
             <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
           </div>
           <pre><span class="op">{</span>
@@ -623,35 +623,35 @@
               <tr>
                 <td><span class="tier-badge tier-block">BLOCK</span></td>
                 <td><code>block</code></td>
-                <td>0–14 or registry match</td>
+                <td>0-14 or registry match</td>
                 <td><code>critical</code></td>
                 <td>Reject interaction immediately</td>
               </tr>
               <tr>
                 <td><span class="tier-badge tier-flag">FLAG</span></td>
                 <td><code>flag</code></td>
-                <td>15–24</td>
+                <td>15-24</td>
                 <td><code>high</code></td>
                 <td>Manual review before any interaction</td>
               </tr>
               <tr>
                 <td><span class="tier-badge tier-review">REVIEW</span></td>
                 <td><code>review</code></td>
-                <td>25–49</td>
+                <td>25-49</td>
                 <td><code>medium</code></td>
                 <td>Human review recommended</td>
               </tr>
               <tr>
                 <td><span class="tier-badge tier-monitor">MONITOR</span></td>
                 <td><code>monitor</code></td>
-                <td>50–69</td>
+                <td>50-69</td>
                 <td><code>low</code></td>
                 <td>Allow with monitoring</td>
               </tr>
               <tr>
                 <td><span class="tier-badge tier-allow">ALLOW</span></td>
                 <td><code>allow</code></td>
-                <td>70–100 or trusted registry</td>
+                <td>70-100 or trusted registry</td>
                 <td><code>none</code></td>
                 <td>Proceed normally</td>
               </tr>
