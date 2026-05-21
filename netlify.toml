@@ -1,0 +1,22 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/agent"
+  to = "/agent/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/shield"
+  to = "/shield/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/docs"
+  to = "/docs/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/pricing"
+  to = "/pricing/index.html"
+  status = 200

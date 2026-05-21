@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KaelAi Agent — The Trust Layer for Agentic Commerce</title>
+  <meta name="description" content="KAT Scores give autonomous AI agents a behavioral credit rating before funds move. Built for x402, Bittensor, and the emerging agent economy.">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<!-- ── Navigation ── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">Kael<span>Ai</span></a>
+    <div class="nav-links">
+      <a href="/agent" class="active">Agent</a>
+      <a href="/shield">Shield</a>
+      <a href="/docs">Docs</a>
+      <a href="/pricing">Pricing</a>
+    </div>
+    <a href="/agent" class="btn btn-primary btn-sm nav-cta">Get API Key</a>
+    <button class="nav-hamburger" id="hamburger" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="nav-mobile" id="mobile-nav">
+    <a href="/agent">Agent</a>
+    <a href="/shield">Shield</a>
+    <a href="/docs">Docs</a>
+    <a href="/pricing">Pricing</a>
+    <a href="/agent" class="btn btn-primary">Get API Key</a>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-tag">KaelAi Agent</div>
+    <h1>The trust layer for<br>agentic commerce</h1>
+    <p class="hero-sub">KAT Scores give autonomous AI agents a behavioral credit rating before funds move. Built for x402, Bittensor, and the emerging agent economy.</p>
+    <div class="hero-ctas">
+      <a href="https://app.kaelai.io" class="btn btn-primary btn-lg">Get Your Free API Key</a>
+      <a href="/docs" class="btn btn-ghost btn-lg">Read the Docs</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── Quick Start ── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Quick start</h2>
+      <p>One API call. Full behavioral analysis. No configuration required.</p>
+    </div>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-lang">curl</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><span class="kw">curl</span> -X POST <span class="str">https://api.kaelai.io/api/v1/score</span> \
+  -H <span class="str">"Authorization: Bearer YOUR_API_KEY"</span> \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{
+    "wallet_address": "0xYourWalletAddress",
+    "chain": "eth"
+  }'</span></pre>
+    </div>
+
+    <div class="code-block" style="margin-top: 0;">
+      <div class="code-block-header">
+        <span class="code-block-lang">JSON Response</span>
+        <button class="code-copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><span class="op">{</span>
+  <span class="kw">"wallet_address"</span>: <span class="str">"0xYourWalletAddress"</span>,
+  <span class="kw">"chain"</span>:          <span class="str">"eth"</span>,
+  <span class="kw">"scoring_mode"</span>:   <span class="str">"agent"</span>,
+  <span class="kw">"overall_score"</span>:  <span class="num">74</span>,
+  <span class="kw">"grade"</span>:          <span class="str">"BBB"</span>,
+  <span class="kw">"grade_label"</span>:    <span class="str">"Moderate trust — verified active wallet"</span>,
+  <span class="kw">"dimensions"</span>: <span class="op">{</span>
+    <span class="kw">"transaction_longevity"</span>:    <span class="num">80</span>,
+    <span class="kw">"behavioral_consistency"</span>:   <span class="num">71</span>,
+    <span class="kw">"counterparty_quality"</span>:     <span class="num">68</span>,
+    <span class="kw">"wallet_activity"</span>:          <span class="num">76</span>,
+    <span class="kw">"value_stability"</span>:          <span class="num">75</span>
+  <span class="op">}</span>,
+  <span class="kw">"recommendation"</span>: <span class="str">"Proceed with standard commerce limits"</span>,
+  <span class="kw">"cached"</span>:         <span class="bool">false</span>,
+  <span class="kw">"scored_at"</span>:      <span class="str">"2026-05-21T11:00:00Z"</span>
+<span class="op">}</span></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── What is a KAT Score ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <h2>What is a KAT Score?</h2>
+      <p>KAT (KaelAi Trust) Scores measure behavioral trustworthiness across five independent dimensions. Think of it as a credit bureau for the agent economy — but built on onchain behavior, not identity.</p>
+    </div>
+
+    <div class="dimensions-grid">
+      <div class="dimension-card">
+        <div class="dim-icon">⏱️</div>
+        <div class="dim-name">TL</div>
+        <div class="dim-full">Transaction Longevity</div>
+        <p>How long the wallet has been active and transacting. Older wallets with consistent history score higher.</p>
+      </div>
+      <div class="dimension-card">
+        <div class="dim-icon">🔄</div>
+        <div class="dim-name">BC</div>
+        <div class="dim-full">Behavioral Consistency</div>
+        <p>Pattern stability over time. Erratic activity, sudden large transactions, or behavioral shifts reduce this score.</p>
+      </div>
+      <div class="dimension-card">
+        <div class="dim-icon">🤝</div>
+        <div class="dim-name">CQ</div>
+        <div class="dim-full">Counterparty Quality</div>
+        <p>The trustworthiness of wallets and protocols this address has interacted with. Good neighbors matter.</p>
+      </div>
+      <div class="dimension-card">
+        <div class="dim-icon">⚡</div>
+        <div class="dim-name">WA</div>
+        <div class="dim-full">Wallet Activity</div>
+        <p>Depth and breadth of protocol engagement. Active DeFi participants across verified protocols score higher.</p>
+      </div>
+      <div class="dimension-card">
+        <div class="dim-icon">📊</div>
+        <div class="dim-name">VS</div>
+        <div class="dim-full">Value Stability</div>
+        <p>Transaction value variance and patterns. Extreme spikes or anomalous value ratios signal potential risk.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 48px;">
+      <h3 style="margin-bottom: 20px; text-align: center; color: var(--text);">Grade Scale</h3>
+      <div class="table-wrap">
+        <table class="styled">
+          <thead>
+            <tr>
+              <th>Grade</th>
+              <th>Score Range</th>
+              <th>Label</th>
+              <th>Recommended Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span style="color: #34d399; font-weight: 700;">AAA</span></td>
+              <td>90–100</td>
+              <td>Exceptional trust</td>
+              <td>Proceed with full commerce limits</td>
+            </tr>
+            <tr>
+              <td><span style="color: #4ade80; font-weight: 700;">AA</span></td>
+              <td>80–89</td>
+              <td>High trust — established wallet</td>
+              <td>Proceed with confidence</td>
+            </tr>
+            <tr>
+              <td><span style="color: #86efac; font-weight: 700;">A</span></td>
+              <td>70–79</td>
+              <td>Good trust — active participant</td>
+              <td>Standard commerce limits apply</td>
+            </tr>
+            <tr>
+              <td><span style="color: var(--amber); font-weight: 700;">BBB</span></td>
+              <td>60–69</td>
+              <td>Moderate trust — verified active</td>
+              <td>Proceed with standard limits</td>
+            </tr>
+            <tr>
+              <td><span style="color: #fbbf24; font-weight: 700;">BB</span></td>
+              <td>50–59</td>
+              <td>Below average — limited history</td>
+              <td>Apply reduced limits</td>
+            </tr>
+            <tr>
+              <td><span style="color: #f97316; font-weight: 700;">B</span></td>
+              <td>40–49</td>
+              <td>Low trust — thin or erratic history</td>
+              <td>Require additional verification</td>
+            </tr>
+            <tr>
+              <td><span style="color: #ef4444; font-weight: 700;">CCC</span></td>
+              <td>0–39</td>
+              <td>Very low trust — high risk signals</td>
+              <td>Decline or require full KYC</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Built For ── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Built for the agent economy</h2>
+      <p>KaelAi Agent integrates natively with the infrastructure powering autonomous commerce.</p>
+    </div>
+    <div class="built-for-grid">
+      <div class="built-for-card">
+        <div class="icon">⚡</div>
+        <h4>x402 Protocol</h4>
+        <p>Gate x402 payments behind trust scores. Only let high-KAT wallets transact automatically — protect your protocol without manual review.</p>
+      </div>
+      <div class="built-for-card">
+        <div class="icon">🧠</div>
+        <h4>Bittensor Subnets</h4>
+        <p>Score validator and miner wallets on TAO. Identify reliable subnet participants versus newly-created or low-trust actors.</p>
+      </div>
+      <div class="built-for-card">
+        <div class="icon">🤖</div>
+        <h4>Agent Wallets</h4>
+        <p>Give your AI agent the ability to verify counterparties before transacting. Behavioral scoring that works even for wallets with no identity layer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Supported Chains ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Supported chains</h2>
+      <p>10 chains. One API. The same behavioral scoring engine across every network.</p>
+    </div>
+    <div class="table-wrap">
+      <table class="styled">
+        <thead>
+          <tr>
+            <th>Chain</th>
+            <th>Code</th>
+            <th>Network</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ethereum</td>
+            <td><code>eth</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Solana</td>
+            <td><code>sol</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Bitcoin</td>
+            <td><code>btc</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Bittensor</td>
+            <td><code>tao</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Base</td>
+            <td><code>base</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Polygon</td>
+            <td><code>polygon</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>BNB Smart Chain</td>
+            <td><code>bsc</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Arbitrum</td>
+            <td><code>arbitrum</code></td>
+            <td>One</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Avalanche</td>
+            <td><code>avax</code></td>
+            <td>C-Chain</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+          <tr>
+            <td>Hyperliquid</td>
+            <td><code>hype</code></td>
+            <td>Mainnet</td>
+            <td><span style="color: var(--green); font-weight: 600;">● Live</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── Pricing ── -->
+<section class="section section-surface">
+  <div class="container">
+    <div class="section-heading">
+      <h2>Agent Pricing</h2>
+      <p>Start free. Scale as you grow. Founding member rates locked for life.</p>
+    </div>
+
+    <div class="pricing-grid-4">
+
+      <!-- Free -->
+      <div class="pricing-card">
+        <div>
+          <div class="pricing-name">Free</div>
+          <div class="pricing-price">$0</div>
+          <div class="pricing-per">100 queries included · no credit card</div>
+        </div>
+        <ul class="pricing-features">
+          <li class="pricing-feature">100 queries, never expires</li>
+          <li class="pricing-feature">All 10 chains</li>
+          <li class="pricing-feature">Full KAT Score + grade</li>
+          <li class="pricing-feature">Instant access</li>
+          <li class="pricing-feature">No credit card required</li>
+        </ul>
+        <a href="https://app.kaelai.io" class="btn btn-secondary">Get Started Free</a>
+      </div>
+
+      <!-- PAYG -->
+      <div class="pricing-card">
+        <div>
+          <div class="pricing-name">Pay As You Go</div>
+          <div class="pricing-price"><sup>$</sup>0.01</div>
+          <div class="pricing-per">per query · no subscription</div>
+        </div>
+        <ul class="pricing-features">
+          <li class="pricing-feature">$0.01 per query</li>
+          <li class="pricing-feature">Top up and go</li>
+          <li class="pricing-feature">No monthly commitment</li>
+          <li class="pricing-feature">All 10 chains</li>
+          <li class="pricing-feature">Full API access</li>
+        </ul>
+        <a href="https://app.kaelai.io" class="btn btn-ghost">Top Up</a>
+      </div>
+
+      <!-- Builder -->
+      <div class="pricing-card featured">
+        <div class="pricing-badge">Founding Member Rate</div>
+        <div>
+          <div class="pricing-name">Builder</div>
+          <div class="pricing-price"><sup>$</sup>24.99</div>
+          <div class="pricing-per">per month · founding rate</div>
+        </div>
+        <ul class="pricing-features">
+          <li class="pricing-feature">3,000 queries / month</li>
+          <li class="pricing-feature">$0.01 per query overage</li>
+          <li class="pricing-feature">All 10 chains</li>
+          <li class="pricing-feature">Full API access</li>
+          <li class="pricing-feature">Priority email support</li>
+          <li class="pricing-feature">Rate locked for life</li>
+        </ul>
+        <div class="pricing-founder-note">Founding rate — locked while subscribed</div>
+        <a href="https://app.kaelai.io" class="btn btn-primary">Subscribe</a>
+      </div>
+
+      <!-- Scale -->
+      <div class="pricing-card">
+        <div class="pricing-badge" style="background: var(--green-dim);">Founding Member Rate</div>
+        <div>
+          <div class="pricing-name">Scale</div>
+          <div class="pricing-price"><sup>$</sup>129.99</div>
+          <div class="pricing-per">per month · founding rate</div>
+        </div>
+        <ul class="pricing-features">
+          <li class="pricing-feature">20,000 queries / month</li>
+          <li class="pricing-feature">$0.006 per query overage</li>
+          <li class="pricing-feature">All 10 chains</li>
+          <li class="pricing-feature">Full API access</li>
+          <li class="pricing-feature">Priority support + SLA</li>
+          <li class="pricing-feature">Rate locked for life</li>
+        </ul>
+        <div class="pricing-founder-note">Founding rate — locked while subscribed</div>
+        <a href="https://app.kaelai.io" class="btn btn-primary">Subscribe</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">Kael<span>Ai</span></div>
+      <div class="footer-tagline">Built for the onchain economy</div>
+      <a href="mailto:hello@kaelai.io" class="footer-email">hello@kaelai.io</a>
+    </div>
+    <nav class="footer-links">
+      <a href="/agent">Agent</a>
+      <a href="/shield">Shield</a>
+      <a href="/docs">Docs</a>
+      <a href="/pricing">Pricing</a>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 KaelAi. All rights reserved.</span>
+    <span class="footer-copy">Behavioral wallet intelligence.</span>
+  </div>
+</footer>
+
+<script>
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobile-nav');
+  hamburger.addEventListener('click', () => {
+    mobileNav.classList.toggle('open');
+  });
+
+  function copyCode(btn) {
+    const pre = btn.closest('.code-block').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
