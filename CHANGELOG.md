@@ -60,7 +60,7 @@ Flag-based tier adjustments:
 |---|---|
 | `receive_only_pattern` | No outbound transactions, or inbound/outbound ratio > 20 |
 | `zero_known_protocol_ratio` | 0% known protocol interactions with ≥ 3 contract calls |
-| `tornado_cash_funded` | Registry confirms Tornado Cash as funding source |
+| `tornado_cash_funded` | Three detection paths — see Tornado Cash Detection section below ✅ Fully functional |
 | `value_spike_anomaly` | Value spike ratio ≥ 50× (p95/median) |
 | `counterparty_concentration` | Single counterparty accounts for ≥ 70% of volume |
 | `failed_tx_anomaly` | ≥ 15% of transactions failed |
@@ -135,6 +135,56 @@ and `monthly_billing_amount_after_shield`. Spend limit gates apply post-charge.
 
 ---
 
+### Tornado Cash Detection ✅ Complete
+**Implemented: 2026-05-21**
+
+The `tornado_cash_funded` flag is **fully functional** with three active detection paths.
+
+#### Detection paths (any one fires the flag)
+
+1. **Registry path** — wallet manually tagged in `exploit_registry` with
+   `funding_source = 'tornado_cash'`. Highest confidence; used for confirmed incident
+   wallets such as the Kelp DAO exploit.
+
+2. **Live contract scan** *(new)* — on every fresh Shield query, all unique
+   `from_address` / `to_address` values in the wallet's 50-transaction sample are
+   checked against the `tornado_cash_contracts` table. Match → `mixer_contact_detected`
+   injected into `behavioral_features` → flag fires. Redis-cached per chain (1hr TTL)
+   so the lookup adds no meaningful latency.
+
+3. **Indirect funding trace** *(Phase 2)* — detect wallets funded by known TC withdrawal
+   addresses one hop away. Not yet implemented.
+
+#### `tornado_cash_contracts` table — 35 entries seeded across 5 chains
+
+| Chain | Entries | Source | Verification status |
+|---|---|---|---|
+| ETH | 23 | OFAC SDN list, Aug 8 2022 + Etherscan labels | ✅ 21 OFAC-verified, 2 needs_review |
+| BSC | 5 | Community-sourced | ⚠️ All needs_review |
+| Polygon | 4 | Community-sourced | ⚠️ All needs_review |
+| Arbitrum | 2 | Community-sourced | ⚠️ All needs_review |
+| Optimism | 1 | Community-sourced | ⚠️ All needs_review |
+
+ETH coverage: 0.1/1/10/100 ETH pools, 100/1k/10k/100k DAI pools,
+100/1k/5k/50k USDC pools, cDAI pools, TC Router, TC Proxy, TC Nova.
+
+All non-ETH entries carry `needs_review = TRUE` in the database and must be
+validated against current Etherscan labels before being relied upon in production
+enforcement decisions.
+
+#### New service: `app/services/tornado_cash.py`
+- `get_tc_address_set(chain, db)` — DB query with 1hr Redis cache per chain
+- `check_tornado_cash_interaction(counterparty_addrs, chain, db)` — returns
+  `(detected: bool, matched_address: str | None)`
+- `invalidate_tc_cache(chain)` — bust cache after registry updates
+
+#### Behavioral feature added
+`all_counterparty_addresses` added to `behavioral_features` JSONB — full deduplicated
+set of all from/to counterparty addresses in the 50-tx sample (previously capped
+at 15 samples). Used by Shield TC detection and available for future flag work.
+
+---
+
 ### Live Tier Confirmation
 
 The following tiers were confirmed against real Ethereum wallets on 2026-05-21:
@@ -199,7 +249,35 @@ for 7 days. Surface as `etherscan_entity_label` in `shield_data`.
 
 Affected: `shield_scorer.py`, `exploit_registry.py`, `score.py`, `score.py` model.
 
-### 2. Advanced Shield Flags
+### 2. Tornado Cash Contract Validation — BSC / Polygon / Arbitrum / Optimism
+**Priority: High**
+
+The `tornado_cash_contracts` table was seeded with community-sourced addresses
+for BSC (5), Polygon (4), Arbitrum (2), and Optimism (1). All carry
+`needs_review = TRUE`. Before these chains are relied upon in production:
+
+- Validate each address against current Etherscan / BscScan / PolygonScan labels
+- Cross-reference against the Chainalysis and TRM public TC address datasets
+- Update `verified_source` and set `needs_review = FALSE` on confirmed entries
+- Remove any entries that cannot be verified
+
+Run `invalidate_tc_cache(chain)` after any table updates to bust the 1hr Redis cache.
+
+### 3. Indirect Tornado Cash Funding Trace
+**Priority: Medium**
+
+Detection path 3 (not yet implemented): detect wallets funded by known TC
+withdrawal addresses one hop away. Implementation approach:
+
+- On Shield query, check if any of the wallet's inbound `from_address` values
+  is a known TC withdrawal address (i.e., an address that previously received
+  a TC withdrawal)
+- Requires a `tc_withdrawal_addresses` table or integration with a third-party
+  blockchain analytics API (Chainalysis, TRM, Nansen)
+- Flag with lower confidence than direct interaction (0.70 vs 0.99)
+- Surface as `tornado_cash_indirect` sub-flag within `tornado_cash_funded`
+
+### 4. Advanced Shield Flags
 **Priority: High**
 
 Extend Phase 1 flags with:
