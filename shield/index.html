@@ -299,23 +299,20 @@
       <p>Start with PAYG. Upgrade to registry access and real-time alerts. Founding rates locked for life.</p>
     </div>
 
-    <!-- Pricing toggles -->
+    <!-- Billing frequency toggle -->
     <div class="pricing-toggles">
-      <div class="pricing-toggle-group" id="shield-rate-toggle">
-        <button class="pricing-toggle-btn active" data-rate="founding" onclick="setShieldRate('founding',this)">Founding Rates</button>
-        <button class="pricing-toggle-btn" data-rate="standard" onclick="setShieldRate('standard',this)">Standard Rates</button>
-      </div>
       <div class="pricing-toggle-group" id="shield-freq-toggle">
-        <button class="pricing-toggle-btn active" data-freq="monthly" onclick="setShieldFreq('monthly',this)">Monthly</button>
-        <button class="pricing-toggle-btn" data-freq="annual" onclick="setShieldFreq('annual',this)">Annual <span class="toggle-save-label">Save up to 20%</span></button>
+        <button class="pricing-toggle-btn active" onclick="setShieldFreq('monthly',this)">Monthly</button>
+        <button class="pricing-toggle-btn" onclick="setShieldFreq('annual',this)">Annual <span class="toggle-save-label">Save up to 20%</span></button>
       </div>
     </div>
 
-    <div id="shield-standard-notice" class="info-box amber-box" style="display:none; margin-bottom:24px; max-width:620px; margin-left:auto; margin-right:auto; text-align:center;">
-      Standard rates apply after the founding member period closes. Founding slots are still open now.
+    <!-- Founding slots notice (hidden by default, shown when slots = 0) -->
+    <div id="shield-slots-closed" class="info-box" style="display:none; margin-bottom:24px; max-width:640px; margin-left:auto; margin-right:auto; text-align:center;">
+      Founding member slots are now full. Standard rates apply to new subscriptions.
     </div>
 
-    <div class="pricing-grid-4" id="shield-pricing-grid">
+    <div class="pricing-grid-4">
 
       <!-- PAYG -->
       <div class="pricing-card">
@@ -337,15 +334,15 @@
       </div>
 
       <!-- Shield Starter -->
-      <div class="pricing-card" id="shield-starter-card">
-        <div class="pricing-badge shield-founding-badge" style="background: var(--amber-dim);">Founding Rate</div>
-        <div class="pricing-badge shield-standard-badge" style="display:none;">Standard Rate</div>
+      <div class="pricing-card">
+        <div class="pricing-badge shield-founding-badge" style="background: var(--amber-dim);">Founding Member Rate</div>
         <div>
           <div class="pricing-name">Shield Starter</div>
-          <div class="pricing-price"><sup>$</sup><span id="shield-starter-price">49.99</span></div>
-          <div class="pricing-per" id="shield-starter-per">per month - founding rate</div>
-          <div class="pricing-per" id="shield-starter-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
-          <div class="pricing-savings" id="shield-starter-savings">Save 50% vs PAYG from your first query</div>
+          <div class="pricing-price"><sup>$</sup><span id="ss-price">49.99</span></div>
+          <div class="pricing-standard-rate" id="ss-standard-cross">$64.99 standard</div>
+          <div class="pricing-per" id="ss-per">per month</div>
+          <div class="pricing-per" id="ss-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+          <div class="pricing-savings" id="ss-savings">Save 50% vs PAYG from your first query</div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">1,000 queries / month included</li>
@@ -353,21 +350,28 @@
           <li class="pricing-feature">Email alerts on BLOCK / FLAG</li>
           <li class="pricing-feature">Full 5-tier threat analysis</li>
           <li class="pricing-feature">All 6 Phase 1 flags</li>
-          <li class="pricing-feature">Rate locked for life</li>
+          <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
         <div class="pricing-founder-note shield-founding-note">Founding rate - locked while subscribed</div>
-        <a href="/api/v1/billing/checkout?price_id=price_1TZY4GB8cESR1et91PxFJVZJ&plan=Shield+Starter" class="btn btn-ghost" id="shield-starter-btn">Subscribe</a>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZXvqB8cESR1et9eTGWPHel&plan=Shield+Starter"
+           class="btn btn-primary" id="ss-btn"
+           data-founding-monthly="price_1TZXvqB8cESR1et9eTGWPHel"
+           data-founding-annual="price_1TZXx7B8cESR1et9XQGuJK8Y"
+           data-standard-monthly="price_1TZZFQB8cESR1et94i7707Mk"
+           data-standard-annual="price_1TZY12B8cESR1et9vjzcfUCC"
+           data-plan="Shield+Starter">Subscribe</a>
       </div>
 
       <!-- Shield Pro -->
-      <div class="pricing-card featured-amber" id="shield-pro-card">
+      <div class="pricing-card featured-amber">
         <div class="pricing-badge amber-badge shield-founding-badge">Most Popular - Founding Rate</div>
         <div class="pricing-badge amber-badge shield-standard-badge" style="display:none;">Most Popular</div>
         <div>
           <div class="pricing-name">Shield Pro</div>
-          <div class="pricing-price"><sup>$</sup><span id="shield-pro-price">299</span></div>
-          <div class="pricing-per" id="shield-pro-per">per month - founding rate</div>
-          <div class="pricing-per" id="shield-pro-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+          <div class="pricing-price"><sup>$</sup><span id="sp-price">299</span></div>
+          <div class="pricing-standard-rate" id="sp-standard-cross">$379 standard</div>
+          <div class="pricing-per" id="sp-per">per month</div>
+          <div class="pricing-per" id="sp-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">10,000 queries / month included</li>
@@ -376,115 +380,154 @@
           <li class="pricing-feature">Priority support</li>
           <li class="pricing-feature">Custom alert thresholds</li>
           <li class="pricing-feature">Full 5-tier threat analysis</li>
-          <li class="pricing-feature">Rate locked for life</li>
+          <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
         <div class="pricing-founder-note shield-founding-note">Founding rate - locked while subscribed</div>
-        <a href="/api/v1/billing/checkout?price_id=price_1TZY2MB8cESR1et91t9hVgW5&plan=Shield+Pro" class="btn btn-shield" id="shield-pro-btn">Subscribe</a>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZY1rB8cESR1et95Ttxf5JO&plan=Shield+Pro"
+           class="btn btn-primary" id="sp-btn"
+           data-founding-monthly="price_1TZY1rB8cESR1et95Ttxf5JO"
+           data-founding-annual="price_1TZYnLB8cESR1et9GRgK0NK"
+           data-standard-monthly="price_1TZY2MB8cESR1et91t9hVgW5"
+           data-standard-annual="price_1TZYnrB8cESR1et925GKUeVe"
+           data-plan="Shield+Pro">Subscribe</a>
       </div>
 
       <!-- Shield Enterprise -->
-      <div class="pricing-card" id="shield-enterprise-card">
+      <div class="pricing-card">
         <div>
           <div class="pricing-name">Shield Enterprise</div>
-          <div class="pricing-price"><sup>$</sup><span id="shield-enterprise-price">999</span></div>
-          <div class="pricing-per" id="shield-enterprise-per">per month</div>
-          <div class="pricing-per" id="shield-enterprise-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+          <div class="pricing-price"><sup>$</sup><span id="se-price">999</span></div>
+          <div class="pricing-per" id="se-per">per month</div>
+          <div class="pricing-per" id="se-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">100,000 queries / month included</li>
           <li class="pricing-feature">Registry access - exploit + trusted</li>
           <li class="pricing-feature">Webhook + Telegram + Slack alerts</li>
           <li class="pricing-feature">Dedicated support</li>
-          <li class="pricing-feature">Custom integrations</li>
-          <li class="pricing-feature">SLA available</li>
+          <li class="pricing-feature">Custom integrations + SLA</li>
           <li class="pricing-feature">Custom alert thresholds</li>
         </ul>
-        <a href="/api/v1/billing/checkout?price_id=price_1TZXwHB8cESR1et9vLo4CbUA&plan=Shield+Enterprise" class="btn btn-ghost" id="shield-enterprise-btn">Subscribe</a>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZY3oB8cESR1et9cMFhGVJh&plan=Shield+Enterprise"
+           class="btn btn-primary" id="se-btn"
+           data-standard-monthly="price_1TZY3oB8cESR1et9cMFhGVJh"
+           data-standard-annual="price_1TZY4GB8cESR1et91PxFJVZJ"
+           data-plan="Shield+Enterprise">Subscribe</a>
       </div>
 
     </div>
 
     <div class="pricing-cta-area">
-      <p>Founding member rates are locked for life while subscribed. Limited slots remaining.</p>
+      <p class="shield-founding-note">Founding member rates are locked for life while subscribed. <span id="shield-slots-remaining-text"></span></p>
       <a href="mailto:hello@kaelai.io" class="btn btn-ghost">Request a Demo - hello@kaelai.io</a>
     </div>
   </div>
 </section>
 
 <script>
-// ── Shield pricing toggle logic ───────────────────────────────────────────
-const SHIELD_PRICES = {
+// ── Shield pricing: frequency toggle + live founding slot check ─────────────
+
+const SHIELD_DATA = {
   starter: {
-    founding_monthly:  { price: '49.99', price_id: 'price_1TZY4GB8cESR1et91PxFJVZJ', per: 'per month - founding rate', annual_note: '' },
-    founding_annual:   { price: '39.99', price_id: 'price_1TZY3OB8cESR1et9iPbBdlB9', per: 'per month - billed annually', annual_note: 'Billed as $479.88/year - save $120' },
-    standard_monthly:  { price: '64.99', price_id: 'price_1TZY3oB8cESR1et9cMFhGVJh', per: 'per month',                 annual_note: '' },
-    standard_annual:   { price: '51.99', price_id: 'price_1TZY2tB8cESR1et917DeDMzO', per: 'per month - billed annually', annual_note: 'Billed as $623.88/year - save $156' },
+    foundingMonthly:  { price: '49.99', standard: '$64.99 standard', per: 'per month', annualNote: '' },
+    foundingAnnual:   { price: '39.99', standard: '$51.99 standard', per: 'per month - billed annually', annualNote: 'Billed as $479.88/year - save $120' },
+    standardMonthly:  { price: '64.99', standard: '',               per: 'per month', annualNote: '' },
+    standardAnnual:   { price: '51.99', standard: '',               per: 'per month - billed annually', annualNote: 'Billed as $623.88/year' },
   },
   pro: {
-    founding_monthly:  { price: '299',   price_id: 'price_1TZY2MB8cESR1et91t9hVgW5', per: 'per month - founding rate',   annual_note: '' },
-    founding_annual:   { price: '269',   price_id: 'price_1TZYnLB8cESR1et9GRgK0NKC', per: 'per month - billed annually', annual_note: 'Billed as $3,228/year - save $360' },
-    standard_monthly:  { price: '379',   price_id: 'price_1TZY1rB8cESR1et95Ttxf5JO', per: 'per month',                  annual_note: '' },
-    standard_annual:   { price: '341',   price_id: 'price_1TZYnrB8cESR1et925GKUeVe', per: 'per month - billed annually', annual_note: 'Billed as $4,092/year - save $456' },
+    foundingMonthly:  { price: '299',   standard: '$379 standard',   per: 'per month', annualNote: '' },
+    foundingAnnual:   { price: '269',   standard: '$341 standard',   per: 'per month - billed annually', annualNote: 'Billed as $3,228/year - save $360' },
+    standardMonthly:  { price: '379',   standard: '',               per: 'per month', annualNote: '' },
+    standardAnnual:   { price: '341',   standard: '',               per: 'per month - billed annually', annualNote: 'Billed as $4,092/year' },
   },
   enterprise: {
-    founding_monthly:  { price: '999',   price_id: 'price_1TZXwHB8cESR1et9vLo4CbUA', per: 'per month', annual_note: '' },
-    founding_annual:   { price: '799',   price_id: 'price_1TZXvqB8cESR1et9eTGWPHel', per: 'per month - billed annually', annual_note: 'Billed as $9,588/year - save $2,400' },
-    standard_monthly:  { price: '999',   price_id: 'price_1TZXwHB8cESR1et9vLo4CbUA', per: 'per month', annual_note: '' },
-    standard_annual:   { price: '799',   price_id: 'price_1TZXvqB8cESR1et9eTGWPHel', per: 'per month - billed annually', annual_note: 'Billed as $9,588/year - save $2,400' },
+    standardMonthly:  { price: '999',   standard: '',               per: 'per month', annualNote: '' },
+    standardAnnual:   { price: '799',   standard: '',               per: 'per month - billed annually', annualNote: 'Billed as $9,588/year - save $2,400' },
   },
 };
 
-let shieldRate = 'founding';
-let shieldFreq = 'monthly';
+let shieldFreq    = 'monthly';
+let foundingActive = true;   // updated by slot check
 
 function updateShieldPricing() {
-  const isFoundin = shieldRate === 'founding';
-  const key = shieldRate + '_' + shieldFreq;
+  const freq = shieldFreq;
+  const isF  = foundingActive;
 
-  // Show/hide founding badges and notes
-  document.querySelectorAll('.shield-founding-badge').forEach(el => el.style.display = isFoundin ? '' : 'none');
-  document.querySelectorAll('.shield-standard-badge').forEach(el => el.style.display = isFoundin ? 'none' : '');
-  document.querySelectorAll('.shield-founding-note').forEach(el => el.style.display = isFoundin ? '' : 'none');
-  document.getElementById('shield-standard-notice').style.display = isFoundin ? 'none' : '';
+  // Founding vs standard badge/note visibility
+  document.querySelectorAll('.shield-founding-badge').forEach(el => el.style.display = isF ? '' : 'none');
+  document.querySelectorAll('.shield-standard-badge').forEach(el => el.style.display = isF ? 'none' : '');
+  document.querySelectorAll('.shield-founding-note').forEach(el => el.style.display = isF ? '' : 'none');
+  document.getElementById('shield-slots-closed').style.display = isF ? 'none' : '';
 
-  // Update Starter
-  const s = SHIELD_PRICES.starter[key];
-  document.getElementById('shield-starter-price').textContent = s.price;
-  document.getElementById('shield-starter-per').textContent   = s.per;
-  const sNote = document.getElementById('shield-starter-annual-note');
-  sNote.textContent   = s.annual_note;
-  sNote.style.display = s.annual_note ? '' : 'none';
-  const sSavings = document.getElementById('shield-starter-savings');
-  sSavings.style.display = (shieldRate === 'founding' && shieldFreq === 'monthly') ? '' : 'none';
-  document.getElementById('shield-starter-btn').href =
-    '/api/v1/billing/checkout?price_id=' + s.price_id + '&plan=Shield+Starter';
+  function applyCard(priceEl, stdEl, perEl, noteEl, savingsEl, btnEl, data, founding, freq) {
+    const key  = (founding && data[founding + (freq === 'monthly' ? 'Monthly' : 'Annual')])
+                   ? founding + (freq === 'monthly' ? 'Monthly' : 'Annual')
+                   : 'standard' + (freq === 'monthly' ? 'Monthly' : 'Annual');
+    const d = data[key];
+    if (!d) return;
+    if (priceEl) priceEl.textContent = d.price;
+    if (stdEl) {
+      stdEl.textContent = d.standard;
+      stdEl.style.display = d.standard ? '' : 'none';
+      stdEl.classList.toggle('no-founding', !d.standard);
+    }
+    if (perEl) perEl.textContent = d.per;
+    if (noteEl) {
+      noteEl.textContent   = d.annualNote;
+      noteEl.style.display = d.annualNote ? '' : 'none';
+    }
+    if (savingsEl) savingsEl.style.display = (key === 'foundingMonthly') ? '' : 'none';
 
-  // Update Pro
-  const p = SHIELD_PRICES.pro[key];
-  document.getElementById('shield-pro-price').textContent = p.price;
-  document.getElementById('shield-pro-per').textContent   = p.per;
-  const pNote = document.getElementById('shield-pro-annual-note');
-  pNote.textContent   = p.annual_note;
-  pNote.style.display = p.annual_note ? '' : 'none';
-  document.getElementById('shield-pro-btn').href =
-    '/api/v1/billing/checkout?price_id=' + p.price_id + '&plan=Shield+Pro';
+    // Update checkout button price_id
+    if (btnEl) {
+      const foundingKey = freq === 'monthly' ? 'foundingMonthly' : 'foundingAnnual';
+      const standardKey = freq === 'monthly' ? 'standardMonthly' : 'standardAnnual';
+      const pid = (founding && btnEl.dataset[foundingKey.replace('-','')]) && isF
+        ? btnEl.dataset[foundingKey.charAt(0).toLowerCase() + foundingKey.slice(1).replace('-','')]
+        : btnEl.dataset[standardKey.charAt(0).toLowerCase() + standardKey.slice(1).replace('-','')];
 
-  // Update Enterprise
-  const e = SHIELD_PRICES.enterprise[key];
-  document.getElementById('shield-enterprise-price').textContent = e.price;
-  document.getElementById('shield-enterprise-per').textContent   = e.per;
-  const eNote = document.getElementById('shield-enterprise-annual-note');
-  eNote.textContent   = e.annual_note;
-  eNote.style.display = e.annual_note ? '' : 'none';
-  document.getElementById('shield-enterprise-btn').href =
-    '/api/v1/billing/checkout?price_id=' + e.price_id + '&plan=Shield+Enterprise';
-}
+      // Use camelCase dataset keys: foundingMonthly -> data-founding-monthly
+      const actualPid = isF
+        ? (btnEl.getAttribute('data-founding-' + freq) || btnEl.getAttribute('data-standard-' + freq))
+        : btnEl.getAttribute('data-standard-' + freq);
+      if (actualPid) {
+        btnEl.href = '/api/v1/billing/checkout?price_id=' + actualPid + '&plan=' + encodeURIComponent(btnEl.dataset.plan);
+      }
+    }
+  }
 
-function setShieldRate(rate, btn) {
-  shieldRate = rate;
-  document.querySelectorAll('#shield-rate-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  updateShieldPricing();
+  // Starter
+  applyCard(
+    document.getElementById('ss-price'),
+    document.getElementById('ss-standard-cross'),
+    document.getElementById('ss-per'),
+    document.getElementById('ss-annual-note'),
+    document.getElementById('ss-savings'),
+    document.getElementById('ss-btn'),
+    SHIELD_DATA.starter, isF ? 'founding' : 'standard', freq
+  );
+
+  // Pro
+  applyCard(
+    document.getElementById('sp-price'),
+    document.getElementById('sp-standard-cross'),
+    document.getElementById('sp-per'),
+    document.getElementById('sp-annual-note'),
+    null,
+    document.getElementById('sp-btn'),
+    SHIELD_DATA.pro, isF ? 'founding' : 'standard', freq
+  );
+
+  // Enterprise (no founding)
+  applyCard(
+    document.getElementById('se-price'),
+    null,
+    document.getElementById('se-per'),
+    document.getElementById('se-annual-note'),
+    null,
+    document.getElementById('se-btn'),
+    SHIELD_DATA.enterprise, null, freq
+  );
 }
 
 function setShieldFreq(freq, btn) {
@@ -493,6 +536,22 @@ function setShieldFreq(freq, btn) {
   btn.classList.add('active');
   updateShieldPricing();
 }
+
+// Live founding slot check
+(async function() {
+  try {
+    const res  = await fetch('/api/v1/billing/shield-slots');
+    const data = await res.json();
+    foundingActive = data.founding_period_active;
+    const remEl = document.getElementById('shield-slots-remaining-text');
+    if (remEl && data.slots_remaining > 0) {
+      remEl.textContent = data.slots_remaining + ' of ' + data.slots_total + ' founding slots remaining.';
+    }
+    updateShieldPricing();
+  } catch(e) {
+    updateShieldPricing(); // default to founding on error
+  }
+})();
 </script>
 
 <!-- ── Footer ── -->

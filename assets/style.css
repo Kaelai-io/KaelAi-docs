@@ -818,6 +818,18 @@ code {
   letter-spacing: 0.02em;
 }
 
+.pricing-standard-rate {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: line-through;
+  margin-top: 3px;
+}
+
+.pricing-standard-rate.no-founding {
+  text-decoration: none;
+  color: var(--text-2);
+}
+
 /* ── Pricing toggles ─────────────────────────────────────────────────────── */
 .pricing-toggles {
   display: flex;

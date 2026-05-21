@@ -147,20 +147,17 @@
       <p>Behavioral threat detection for DeFi protocols. Start with PAYG - no subscription needed.</p>
     </div>
 
-    <!-- Pricing toggles -->
+    <!-- Billing frequency toggle -->
     <div class="pricing-toggles">
-      <div class="pricing-toggle-group" id="sp-rate-toggle">
-        <button class="pricing-toggle-btn active" onclick="setSpRate('founding',this)">Founding Rates</button>
-        <button class="pricing-toggle-btn" onclick="setSpRate('standard',this)">Standard Rates</button>
-      </div>
-      <div class="pricing-toggle-group" id="sp-freq-toggle">
-        <button class="pricing-toggle-btn active" onclick="setSpFreq('monthly',this)">Monthly</button>
-        <button class="pricing-toggle-btn" onclick="setSpFreq('annual',this)">Annual <span class="toggle-save-label">Save up to 20%</span></button>
+      <div class="pricing-toggle-group" id="psp-freq-toggle">
+        <button class="pricing-toggle-btn active" onclick="setPspFreq('monthly',this)">Monthly</button>
+        <button class="pricing-toggle-btn" onclick="setPspFreq('annual',this)">Annual <span class="toggle-save-label">Save up to 20%</span></button>
       </div>
     </div>
 
-    <div id="sp-standard-notice" class="info-box amber-box" style="display:none; margin-bottom:24px; max-width:680px; margin-left:auto; margin-right:auto; text-align:center;">
-      Standard rates apply after the founding member period closes. Founding slots are still open now.
+    <!-- Slots-closed notice -->
+    <div id="psp-slots-closed" class="info-box" style="display:none; margin-bottom:24px; max-width:680px; margin-left:auto; margin-right:auto; text-align:center;">
+      Founding member slots are now full. Standard rates apply to new subscriptions.
     </div>
 
     <div class="pricing-grid-4">
@@ -186,14 +183,15 @@
 
       <!-- Shield Starter -->
       <div class="pricing-card">
-        <div class="pricing-badge sp-founding-badge" style="background: var(--amber-dim);">Founding Rate</div>
-        <div class="pricing-badge sp-standard-badge" style="display:none; background: var(--border-2); color: var(--text-2);">Standard Rate</div>
+        <div class="pricing-badge psp-founding-badge" style="background: var(--amber-dim);">Founding Member Rate</div>
+        <div class="pricing-badge psp-standard-badge" style="display:none; background: var(--border-2); color: var(--text-2);">Standard Rate</div>
         <div>
           <div class="pricing-name">Shield Starter</div>
-          <div class="pricing-price"><sup>$</sup><span id="sp-starter-price">49.99</span></div>
-          <div class="pricing-per" id="sp-starter-per">per month - founding rate</div>
-          <div class="pricing-per" id="sp-starter-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
-          <div class="pricing-savings" id="sp-starter-savings">Save 50% vs PAYG from your first query</div>
+          <div class="pricing-price"><sup>$</sup><span id="pss-price">49.99</span></div>
+          <div class="pricing-standard-rate" id="pss-standard-cross">$64.99 standard</div>
+          <div class="pricing-per" id="pss-per">per month</div>
+          <div class="pricing-per" id="pss-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+          <div class="pricing-savings" id="pss-savings">Save 50% vs PAYG from your first query</div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">1,000 queries / month included</li>
@@ -203,19 +201,26 @@
           <li class="pricing-feature">Full 5-tier threat analysis</li>
           <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
-        <div class="pricing-founder-note sp-founding-note">Founding rate - limited slots remaining</div>
-        <a href="/api/v1/billing/checkout?price_id=price_1TZY4GB8cESR1et91PxFJVZJ&plan=Shield+Starter" class="btn btn-ghost" id="sp-starter-btn">Subscribe</a>
+        <div class="pricing-founder-note psp-founding-note">Founding rate - limited slots remaining</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZXvqB8cESR1et9eTGWPHel&plan=Shield+Starter"
+           class="btn btn-primary" id="pss-btn"
+           data-founding-monthly="price_1TZXvqB8cESR1et9eTGWPHel"
+           data-founding-annual="price_1TZXx7B8cESR1et9XQGuJK8Y"
+           data-standard-monthly="price_1TZZFQB8cESR1et94i7707Mk"
+           data-standard-annual="price_1TZY12B8cESR1et9vjzcfUCC"
+           data-plan="Shield+Starter">Subscribe</a>
       </div>
 
       <!-- Shield Pro -->
       <div class="pricing-card featured-amber">
-        <div class="pricing-badge amber-badge sp-founding-badge">Most Popular - Founding Rate</div>
-        <div class="pricing-badge amber-badge sp-standard-badge" style="display:none;">Most Popular</div>
+        <div class="pricing-badge amber-badge psp-founding-badge">Most Popular - Founding Rate</div>
+        <div class="pricing-badge amber-badge psp-standard-badge" style="display:none;">Most Popular</div>
         <div>
           <div class="pricing-name">Shield Pro</div>
-          <div class="pricing-price"><sup>$</sup><span id="sp-pro-price">299</span></div>
-          <div class="pricing-per" id="sp-pro-per">per month - founding rate</div>
-          <div class="pricing-per" id="sp-pro-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+          <div class="pricing-price"><sup>$</sup><span id="psp-price">299</span></div>
+          <div class="pricing-standard-rate" id="psp-standard-cross">$379 standard</div>
+          <div class="pricing-per" id="psp-per">per month</div>
+          <div class="pricing-per" id="psp-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">10,000 queries / month included</li>
@@ -226,17 +231,23 @@
           <li class="pricing-feature">Custom alert thresholds</li>
           <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
-        <div class="pricing-founder-note sp-founding-note">Founding rate - limited slots remaining</div>
-        <a href="/api/v1/billing/checkout?price_id=price_1TZY2MB8cESR1et91t9hVgW5&plan=Shield+Pro" class="btn btn-shield" id="sp-pro-btn">Subscribe</a>
+        <div class="pricing-founder-note psp-founding-note">Founding rate - limited slots remaining</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZY1rB8cESR1et95Ttxf5JO&plan=Shield+Pro"
+           class="btn btn-primary" id="psp-btn"
+           data-founding-monthly="price_1TZY1rB8cESR1et95Ttxf5JO"
+           data-founding-annual="price_1TZYnLB8cESR1et9GRgK0NK"
+           data-standard-monthly="price_1TZY2MB8cESR1et91t9hVgW5"
+           data-standard-annual="price_1TZYnrB8cESR1et925GKUeVe"
+           data-plan="Shield+Pro">Subscribe</a>
       </div>
 
       <!-- Shield Enterprise -->
       <div class="pricing-card">
         <div>
           <div class="pricing-name">Shield Enterprise</div>
-          <div class="pricing-price"><sup>$</sup><span id="sp-enterprise-price">999</span></div>
-          <div class="pricing-per" id="sp-enterprise-per">per month</div>
-          <div class="pricing-per" id="sp-enterprise-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+          <div class="pricing-price"><sup>$</sup><span id="pse-price">999</span></div>
+          <div class="pricing-per" id="pse-per">per month</div>
+          <div class="pricing-per" id="pse-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">100,000 queries / month included</li>
@@ -246,87 +257,106 @@
           <li class="pricing-feature">Custom integrations + SLA</li>
           <li class="pricing-feature">Custom alert thresholds</li>
         </ul>
-        <a href="/api/v1/billing/checkout?price_id=price_1TZXwHB8cESR1et9vLo4CbUA&plan=Shield+Enterprise" class="btn btn-ghost" id="sp-enterprise-btn">Subscribe</a>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZY3oB8cESR1et9cMFhGVJh&plan=Shield+Enterprise"
+           class="btn btn-primary" id="pse-btn"
+           data-standard-monthly="price_1TZY3oB8cESR1et9cMFhGVJh"
+           data-standard-annual="price_1TZY4GB8cESR1et91PxFJVZJ"
+           data-plan="Shield+Enterprise">Subscribe</a>
       </div>
 
     </div>
 
-    <div class="info-box amber-box" style="margin-top: 28px; max-width: 680px; margin-left: auto; margin-right: auto; text-align: center;" id="sp-founding-note-box">
-      Founding member rates are locked for life while subscribed. Limited slots remaining. Once founding slots are gone, new subscribers pay standard rates.
+    <div class="info-box amber-box" id="psp-founding-box" style="margin-top: 28px; max-width: 680px; margin-left: auto; margin-right: auto; text-align: center;">
+      Founding member rates are locked for life while subscribed. <span id="psp-slots-text"></span>
+      Once founding slots are gone, new subscribers pay standard rates.
     </div>
   </div>
 </section>
 
 <script>
-// ── Shield pricing toggle (pricing page) ─────────────────────────────────
-const SP_PRICES = {
+// ── Pricing page Shield section: frequency toggle + founding slot check ──────
+const PSP_DATA = {
   starter: {
-    founding_monthly:  { price: '49.99', price_id: 'price_1TZY4GB8cESR1et91PxFJVZJ', per: 'per month - founding rate',   annual_note: '' },
-    founding_annual:   { price: '39.99', price_id: 'price_1TZY3OB8cESR1et9iPbBdlB9', per: 'per month - billed annually', annual_note: 'Billed as $479.88/year - save $120' },
-    standard_monthly:  { price: '64.99', price_id: 'price_1TZY3oB8cESR1et9cMFhGVJh', per: 'per month',                  annual_note: '' },
-    standard_annual:   { price: '51.99', price_id: 'price_1TZY2tB8cESR1et917DeDMzO', per: 'per month - billed annually', annual_note: 'Billed as $623.88/year - save $156' },
+    foundingMonthly:  { price: '49.99', standard: '$64.99 standard', per: 'per month',                  annualNote: '' },
+    foundingAnnual:   { price: '39.99', standard: '$51.99 standard', per: 'per month - billed annually', annualNote: 'Billed as $479.88/year - save $120' },
+    standardMonthly:  { price: '64.99', standard: '',               per: 'per month',                  annualNote: '' },
+    standardAnnual:   { price: '51.99', standard: '',               per: 'per month - billed annually', annualNote: 'Billed as $623.88/year' },
   },
   pro: {
-    founding_monthly:  { price: '299',   price_id: 'price_1TZY2MB8cESR1et91t9hVgW5', per: 'per month - founding rate',   annual_note: '' },
-    founding_annual:   { price: '269',   price_id: 'price_1TZYnLB8cESR1et9GRgK0NKC', per: 'per month - billed annually', annual_note: 'Billed as $3,228/year - save $360' },
-    standard_monthly:  { price: '379',   price_id: 'price_1TZY1rB8cESR1et95Ttxf5JO', per: 'per month',                  annual_note: '' },
-    standard_annual:   { price: '341',   price_id: 'price_1TZYnrB8cESR1et925GKUeVe', per: 'per month - billed annually', annual_note: 'Billed as $4,092/year - save $456' },
+    foundingMonthly:  { price: '299',   standard: '$379 standard',   per: 'per month',                  annualNote: '' },
+    foundingAnnual:   { price: '269',   standard: '$341 standard',   per: 'per month - billed annually', annualNote: 'Billed as $3,228/year - save $360' },
+    standardMonthly:  { price: '379',   standard: '',               per: 'per month',                  annualNote: '' },
+    standardAnnual:   { price: '341',   standard: '',               per: 'per month - billed annually', annualNote: 'Billed as $4,092/year' },
   },
   enterprise: {
-    founding_monthly:  { price: '999',   price_id: 'price_1TZXwHB8cESR1et9vLo4CbUA', per: 'per month', annual_note: '' },
-    founding_annual:   { price: '799',   price_id: 'price_1TZXvqB8cESR1et9eTGWPHel', per: 'per month - billed annually', annual_note: 'Billed as $9,588/year - save $2,400' },
-    standard_monthly:  { price: '999',   price_id: 'price_1TZXwHB8cESR1et9vLo4CbUA', per: 'per month', annual_note: '' },
-    standard_annual:   { price: '799',   price_id: 'price_1TZXvqB8cESR1et9eTGWPHel', per: 'per month - billed annually', annual_note: 'Billed as $9,588/year - save $2,400' },
+    standardMonthly:  { price: '999',   standard: '',               per: 'per month',                  annualNote: '' },
+    standardAnnual:   { price: '799',   standard: '',               per: 'per month - billed annually', annualNote: 'Billed as $9,588/year - save $2,400' },
   },
 };
 
-let spRate = 'founding';
-let spFreq = 'monthly';
+let pspFreq    = 'monthly';
+let pspFounding = true;
 
-function updateSpPricing() {
-  const isFoundin = spRate === 'founding';
-  const key = spRate + '_' + spFreq;
-
-  document.querySelectorAll('.sp-founding-badge').forEach(el => el.style.display = isFoundin ? '' : 'none');
-  document.querySelectorAll('.sp-standard-badge').forEach(el => el.style.display = isFoundin ? 'none' : '');
-  document.querySelectorAll('.sp-founding-note').forEach(el => el.style.display = isFoundin ? '' : 'none');
-  document.getElementById('sp-standard-notice').style.display = isFoundin ? 'none' : '';
-  document.getElementById('sp-founding-note-box').style.display = isFoundin ? '' : 'none';
-
-  function applyCard(prefix, tier) {
-    const d = SP_PRICES[tier][key];
-    document.getElementById(prefix + '-price').textContent = d.price;
-    document.getElementById(prefix + '-per').textContent   = d.per;
-    const note = document.getElementById(prefix + '-annual-note');
-    note.textContent   = d.annual_note;
-    note.style.display = d.annual_note ? '' : 'none';
-    document.getElementById(prefix + '-btn').href =
-      '/api/v1/billing/checkout?price_id=' + d.price_id + '&plan=' + encodeURIComponent(
-        tier === 'starter' ? 'Shield Starter' : tier === 'pro' ? 'Shield Pro' : 'Shield Enterprise'
-      );
+function applyPspCard(ids, data, founding, freq) {
+  const key = (founding && data[founding + (freq === 'monthly' ? 'Monthly' : 'Annual')])
+    ? founding + (freq === 'monthly' ? 'Monthly' : 'Annual')
+    : 'standard' + (freq === 'monthly' ? 'Monthly' : 'Annual');
+  const d = data[key];
+  if (!d) return;
+  const g = id => document.getElementById(id);
+  if (g(ids.price))   g(ids.price).textContent   = d.price;
+  if (ids.std && g(ids.std)) {
+    g(ids.std).textContent   = d.standard;
+    g(ids.std).style.display = d.standard ? '' : 'none';
   }
-
-  const sSavings = document.getElementById('sp-starter-savings');
-  if (sSavings) sSavings.style.display = (spRate === 'founding' && spFreq === 'monthly') ? '' : 'none';
-
-  applyCard('sp-starter',    'starter');
-  applyCard('sp-pro',        'pro');
-  applyCard('sp-enterprise', 'enterprise');
+  if (g(ids.per))     g(ids.per).textContent     = d.per;
+  if (ids.note && g(ids.note)) {
+    g(ids.note).textContent   = d.annualNote;
+    g(ids.note).style.display = d.annualNote ? '' : 'none';
+  }
+  if (ids.savings && g(ids.savings)) g(ids.savings).style.display = (key === 'foundingMonthly') ? '' : 'none';
+  const btn = g(ids.btn);
+  if (btn) {
+    const pid = pspFounding
+      ? (btn.getAttribute('data-founding-' + freq) || btn.getAttribute('data-standard-' + freq))
+      : btn.getAttribute('data-standard-' + freq);
+    if (pid) btn.href = '/api/v1/billing/checkout?price_id=' + pid + '&plan=' + encodeURIComponent(btn.dataset.plan);
+  }
 }
 
-function setSpRate(rate, btn) {
-  spRate = rate;
-  document.querySelectorAll('#sp-rate-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
+function updatePspPricing() {
+  const isF = pspFounding;
+  document.querySelectorAll('.psp-founding-badge').forEach(el => el.style.display = isF ? '' : 'none');
+  document.querySelectorAll('.psp-standard-badge').forEach(el => el.style.display = isF ? 'none' : '');
+  document.querySelectorAll('.psp-founding-note').forEach(el => el.style.display  = isF ? '' : 'none');
+  document.getElementById('psp-slots-closed').style.display  = isF ? 'none' : '';
+  document.getElementById('psp-founding-box').style.display  = isF ? '' : 'none';
+  applyPspCard({price:'pss-price', std:'pss-standard-cross', per:'pss-per', note:'pss-annual-note', savings:'pss-savings', btn:'pss-btn'}, PSP_DATA.starter,    isF ? 'founding' : null, pspFreq);
+  applyPspCard({price:'psp-price', std:'psp-standard-cross', per:'psp-per', note:'psp-annual-note', btn:'psp-btn'},                                PSP_DATA.pro,       isF ? 'founding' : null, pspFreq);
+  applyPspCard({price:'pse-price', per:'pse-per', note:'pse-annual-note', btn:'pse-btn'},                                                             PSP_DATA.enterprise, null, pspFreq);
+}
+
+function setPspFreq(freq, btn) {
+  pspFreq = freq;
+  document.querySelectorAll('#psp-freq-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  updateSpPricing();
+  updatePspPricing();
 }
 
-function setSpFreq(freq, btn) {
-  spFreq = freq;
-  document.querySelectorAll('#sp-freq-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  updateSpPricing();
-}
+(async function() {
+  try {
+    const res  = await fetch('/api/v1/billing/shield-slots');
+    const data = await res.json();
+    pspFounding = data.founding_period_active;
+    const remEl = document.getElementById('psp-slots-text');
+    if (remEl && data.slots_remaining > 0) {
+      remEl.textContent = data.slots_remaining + ' of ' + data.slots_total + ' founding slots remaining.';
+    }
+    updatePspPricing();
+  } catch(e) {
+    updatePspPricing();
+  }
+})();
 </script>
 
 <!-- ── FAQ ── -->
