@@ -809,6 +809,15 @@ code {
   flex-shrink: 0;
 }
 
+.pricing-savings {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: 0.02em;
+}
+
 .pricing-founder-note {
   font-size: 0.75rem;
   color: var(--amber);
