@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to KaelAi - Your subscription is active</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner container">
+    <a href="/" class="nav-logo">Kael<span style="color:var(--green);">Ai</span></a>
+    <div class="nav-links">
+      <a href="/agent">Agent</a>
+      <a href="/shield">Shield</a>
+      <a href="/docs">Docs</a>
+      <a href="/pricing">Pricing</a>
+    </div>
+    <a href="/agent" class="btn btn-primary btn-sm nav-cta">Get API Key</a>
+  </div>
+</nav>
+
+<section class="hero" style="padding: 120px 0 80px;">
+  <div class="container" style="max-width: 560px; text-align: center;">
+    <div style="font-size: 3rem; margin-bottom: 20px;">🎉</div>
+    <div class="hero-tag" id="welcome-tag">Subscription active</div>
+    <h1 style="font-size: 2.2rem; margin-bottom: 16px;">You're in.</h1>
+    <p style="font-size: 1.1rem; color: var(--text-2); margin-bottom: 32px;" id="welcome-body">
+      Your KaelAi subscription is now active. Check your inbox for your API key and onboarding guide.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <a href="/docs" class="btn btn-primary btn-lg">View API Docs</a>
+      <a href="mailto:hello@kaelai.io" class="btn btn-ghost btn-lg">Contact Support</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-inner">
+    <div class="footer-brand">Kael<span style="color:var(--green);">Ai</span></div>
+    <div class="footer-links">
+      <a href="mailto:hello@kaelai.io">hello@kaelai.io</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/docs">Docs</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const plan   = params.get('plan') || '';
+  if (plan) {
+    const tag  = document.getElementById('welcome-tag');
+    const body = document.getElementById('welcome-body');
+    const isShield = plan.toLowerCase().includes('shield');
+    tag.textContent  = plan + ' - active';
+    body.textContent = isShield
+      ? 'Your KaelAi Shield subscription is active. Check your inbox for your API key, registry access credentials, and onboarding guide.'
+      : 'Your KaelAi subscription is active. Check your inbox for your API key and onboarding guide.';
+  }
+</script>
+</body>
+</html>

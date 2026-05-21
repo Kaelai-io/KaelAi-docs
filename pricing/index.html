@@ -137,7 +137,7 @@
 </section>
 
 <!-- ── Shield Pricing ── -->
-<section class="section section-alt">
+<section class="section section-alt" id="shield-pricing">
   <div class="container">
     <div class="section-heading">
       <div style="display: inline-flex; align-items: center; gap: 10px; margin-bottom: 12px;">
@@ -147,14 +147,30 @@
       <p>Behavioral threat detection for DeFi protocols. Start with PAYG - no subscription needed.</p>
     </div>
 
-    <div class="pricing-grid">
+    <!-- Pricing toggles -->
+    <div class="pricing-toggles">
+      <div class="pricing-toggle-group" id="sp-rate-toggle">
+        <button class="pricing-toggle-btn active" onclick="setSpRate('founding',this)">Founding Rates</button>
+        <button class="pricing-toggle-btn" onclick="setSpRate('standard',this)">Standard Rates</button>
+      </div>
+      <div class="pricing-toggle-group" id="sp-freq-toggle">
+        <button class="pricing-toggle-btn active" onclick="setSpFreq('monthly',this)">Monthly</button>
+        <button class="pricing-toggle-btn" onclick="setSpFreq('annual',this)">Annual <span class="toggle-save-label">Save up to 20%</span></button>
+      </div>
+    </div>
+
+    <div id="sp-standard-notice" class="info-box amber-box" style="display:none; margin-bottom:24px; max-width:680px; margin-left:auto; margin-right:auto; text-align:center;">
+      Standard rates apply after the founding member period closes. Founding slots are still open now.
+    </div>
+
+    <div class="pricing-grid-4">
 
       <!-- PAYG -->
       <div class="pricing-card">
         <div>
           <div class="pricing-name">Pay As You Go</div>
           <div class="pricing-price"><sup>$</sup>0.05</div>
-          <div class="pricing-per">per Shield query · no subscription</div>
+          <div class="pricing-per">per Shield query - no subscription</div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">$0.05 per Shield query</li>
@@ -162,19 +178,22 @@
           <li class="pricing-feature">All 6 Phase 1 behavioral flags</li>
           <li class="pricing-feature">Immediate activation</li>
           <li class="pricing-feature">No monthly commitment</li>
-          <li class="pricing-feature">No registry access</li>
+          <li class="pricing-feature-no">No registry access</li>
+          <li class="pricing-feature-no">No alert delivery</li>
         </ul>
         <a href="https://app.kaelai.io" class="btn btn-shield">Try Shield PAYG</a>
       </div>
 
       <!-- Shield Starter -->
       <div class="pricing-card">
-        <div class="pricing-badge" style="background: var(--amber-dim);">Founding Rate</div>
+        <div class="pricing-badge sp-founding-badge" style="background: var(--amber-dim);">Founding Rate</div>
+        <div class="pricing-badge sp-standard-badge" style="display:none; background: var(--border-2); color: var(--text-2);">Standard Rate</div>
         <div>
           <div class="pricing-name">Shield Starter</div>
-          <div class="pricing-price"><sup>$</sup>49.99</div>
-          <div class="pricing-per">per month · founding rate</div>
-          <div class="pricing-savings">Save 50% vs PAYG from your first query</div>
+          <div class="pricing-price"><sup>$</sup><span id="sp-starter-price">49.99</span></div>
+          <div class="pricing-per" id="sp-starter-per">per month - founding rate</div>
+          <div class="pricing-per" id="sp-starter-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+          <div class="pricing-savings" id="sp-starter-savings">Save 50% vs PAYG from your first query</div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">1,000 queries / month included</li>
@@ -184,17 +203,19 @@
           <li class="pricing-feature">Full 5-tier threat analysis</li>
           <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
-        <div class="pricing-founder-note">Founding rate - limited slots remaining</div>
-        <a href="https://app.kaelai.io" class="btn btn-ghost">Subscribe</a>
+        <div class="pricing-founder-note sp-founding-note">Founding rate - limited slots remaining</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZY4GB8cESR1et91PxFJVZJ&plan=Shield+Starter" class="btn btn-ghost" id="sp-starter-btn">Subscribe</a>
       </div>
 
       <!-- Shield Pro -->
       <div class="pricing-card featured-amber">
-        <div class="pricing-badge amber-badge">Most Popular · Founding Rate</div>
+        <div class="pricing-badge amber-badge sp-founding-badge">Most Popular - Founding Rate</div>
+        <div class="pricing-badge amber-badge sp-standard-badge" style="display:none;">Most Popular</div>
         <div>
           <div class="pricing-name">Shield Pro</div>
-          <div class="pricing-price"><sup>$</sup>299</div>
-          <div class="pricing-per">per month · founding rate</div>
+          <div class="pricing-price"><sup>$</sup><span id="sp-pro-price">299</span></div>
+          <div class="pricing-per" id="sp-pro-per">per month - founding rate</div>
+          <div class="pricing-per" id="sp-pro-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">10,000 queries / month included</li>
@@ -205,17 +226,108 @@
           <li class="pricing-feature">Custom alert thresholds</li>
           <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
-        <div class="pricing-founder-note">Founding rate - limited slots remaining</div>
-        <a href="https://app.kaelai.io" class="btn btn-shield">Subscribe</a>
+        <div class="pricing-founder-note sp-founding-note">Founding rate - limited slots remaining</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZY2MB8cESR1et91t9hVgW5&plan=Shield+Pro" class="btn btn-shield" id="sp-pro-btn">Subscribe</a>
+      </div>
+
+      <!-- Shield Enterprise -->
+      <div class="pricing-card">
+        <div>
+          <div class="pricing-name">Shield Enterprise</div>
+          <div class="pricing-price"><sup>$</sup><span id="sp-enterprise-price">999</span></div>
+          <div class="pricing-per" id="sp-enterprise-per">per month</div>
+          <div class="pricing-per" id="sp-enterprise-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
+        </div>
+        <ul class="pricing-features">
+          <li class="pricing-feature">100,000 queries / month included</li>
+          <li class="pricing-feature">Exploit + trusted registry access</li>
+          <li class="pricing-feature">Webhook + Telegram + Slack alerts</li>
+          <li class="pricing-feature">Dedicated support</li>
+          <li class="pricing-feature">Custom integrations + SLA</li>
+          <li class="pricing-feature">Custom alert thresholds</li>
+        </ul>
+        <a href="/api/v1/billing/checkout?price_id=price_1TZXwHB8cESR1et9vLo4CbUA&plan=Shield+Enterprise" class="btn btn-ghost" id="sp-enterprise-btn">Subscribe</a>
       </div>
 
     </div>
 
-    <div class="info-box amber-box" style="margin-top: 28px; max-width: 680px; margin-left: auto; margin-right: auto; text-align: center;">
+    <div class="info-box amber-box" style="margin-top: 28px; max-width: 680px; margin-left: auto; margin-right: auto; text-align: center;" id="sp-founding-note-box">
       Founding member rates are locked for life while subscribed. Limited slots remaining. Once founding slots are gone, new subscribers pay standard rates.
     </div>
   </div>
 </section>
+
+<script>
+// ── Shield pricing toggle (pricing page) ─────────────────────────────────
+const SP_PRICES = {
+  starter: {
+    founding_monthly:  { price: '49.99', price_id: 'price_1TZY4GB8cESR1et91PxFJVZJ', per: 'per month - founding rate',   annual_note: '' },
+    founding_annual:   { price: '39.99', price_id: 'price_1TZY3OB8cESR1et9iPbBdlB9', per: 'per month - billed annually', annual_note: 'Billed as $479.88/year - save $120' },
+    standard_monthly:  { price: '64.99', price_id: 'price_1TZY3oB8cESR1et9cMFhGVJh', per: 'per month',                  annual_note: '' },
+    standard_annual:   { price: '51.99', price_id: 'price_1TZY2tB8cESR1et917DeDMzO', per: 'per month - billed annually', annual_note: 'Billed as $623.88/year - save $156' },
+  },
+  pro: {
+    founding_monthly:  { price: '299',   price_id: 'price_1TZY2MB8cESR1et91t9hVgW5', per: 'per month - founding rate',   annual_note: '' },
+    founding_annual:   { price: '299',   price_id: 'price_1TZY12B8cESR1et9vjzcfUCC', per: 'per month - billed annually', annual_note: 'Billed as $3,588/year' },
+    standard_monthly:  { price: '379',   price_id: 'price_1TZY1rB8cESR1et95Ttxf5JO', per: 'per month',                  annual_note: '' },
+    standard_annual:   { price: '379',   price_id: 'price_1TZXx7B8cESR1et9XQGuJK8Y', per: 'per month - billed annually', annual_note: 'Billed as $4,548/year' },
+  },
+  enterprise: {
+    founding_monthly:  { price: '999',   price_id: 'price_1TZXwHB8cESR1et9vLo4CbUA', per: 'per month', annual_note: '' },
+    founding_annual:   { price: '799',   price_id: 'price_1TZXvqB8cESR1et9eTGWPHel', per: 'per month - billed annually', annual_note: 'Billed as $9,588/year - save $2,400' },
+    standard_monthly:  { price: '999',   price_id: 'price_1TZXwHB8cESR1et9vLo4CbUA', per: 'per month', annual_note: '' },
+    standard_annual:   { price: '799',   price_id: 'price_1TZXvqB8cESR1et9eTGWPHel', per: 'per month - billed annually', annual_note: 'Billed as $9,588/year - save $2,400' },
+  },
+};
+
+let spRate = 'founding';
+let spFreq = 'monthly';
+
+function updateSpPricing() {
+  const isFoundin = spRate === 'founding';
+  const key = spRate + '_' + spFreq;
+
+  document.querySelectorAll('.sp-founding-badge').forEach(el => el.style.display = isFoundin ? '' : 'none');
+  document.querySelectorAll('.sp-standard-badge').forEach(el => el.style.display = isFoundin ? 'none' : '');
+  document.querySelectorAll('.sp-founding-note').forEach(el => el.style.display = isFoundin ? '' : 'none');
+  document.getElementById('sp-standard-notice').style.display = isFoundin ? 'none' : '';
+  document.getElementById('sp-founding-note-box').style.display = isFoundin ? '' : 'none';
+
+  function applyCard(prefix, tier) {
+    const d = SP_PRICES[tier][key];
+    document.getElementById(prefix + '-price').textContent = d.price;
+    document.getElementById(prefix + '-per').textContent   = d.per;
+    const note = document.getElementById(prefix + '-annual-note');
+    note.textContent   = d.annual_note;
+    note.style.display = d.annual_note ? '' : 'none';
+    document.getElementById(prefix + '-btn').href =
+      '/api/v1/billing/checkout?price_id=' + d.price_id + '&plan=' + encodeURIComponent(
+        tier === 'starter' ? 'Shield Starter' : tier === 'pro' ? 'Shield Pro' : 'Shield Enterprise'
+      );
+  }
+
+  const sSavings = document.getElementById('sp-starter-savings');
+  if (sSavings) sSavings.style.display = (spRate === 'founding' && spFreq === 'monthly') ? '' : 'none';
+
+  applyCard('sp-starter',    'starter');
+  applyCard('sp-pro',        'pro');
+  applyCard('sp-enterprise', 'enterprise');
+}
+
+function setSpRate(rate, btn) {
+  spRate = rate;
+  document.querySelectorAll('#sp-rate-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSpPricing();
+}
+
+function setSpFreq(freq, btn) {
+  spFreq = freq;
+  document.querySelectorAll('#sp-freq-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateSpPricing();
+}
+</script>
 
 <!-- ── FAQ ── -->
 <section class="section">
