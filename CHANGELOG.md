@@ -159,6 +159,79 @@ Shield mode response fields.
 
 ---
 
+#### Fix 6 — Meta-commentary and developer notes prohibited from Shield mode reasoning
+
+**Root cause:** The LLM generating Shield mode reasoning occasionally produced sentences
+that read as internal commentary about the scoring system rather than behavioral
+observations about the wallet — e.g. noting that patterns are "characteristic of a test
+wallet" (inferring real-world identity) or editorializing about scoring methodology or
+tool limitations. These are not on-chain behavioral observations and do not belong in
+a production API response consumed by protocol security teams.
+
+**Fix:** Added an explicit prohibition block to `SHIELD_SCORING_SYSTEM_PROMPT` in
+`scorer.py`, directly before the JSON return instruction:
+
+> *"The reasoning field must contain ONLY on-chain behavioral observations about this
+> specific wallet. Do not include: meta-commentary about the scoring system, methodology,
+> or tool capabilities; statements about limitations of the scoring approach; references
+> to what the wallet 'is' in the real world (e.g. 'this is a test wallet'); internal
+> notes about data quality or sample size constraints. Describe what was observed
+> on-chain. Do not editorialize about the tool or the assessment process."*
+
+**Files changed:** `services/scorer.py`
+
+---
+
+### Organic ALLOW Validation — Binance Hot Wallet
+
+**Date confirmed: 2026-05-23**
+
+The ALLOW tier (score ≥ 70, no critical flags) was confirmed reachable organically —
+without a trusted registry entry — against a high-volume production wallet.
+
+**Wallet:** Binance Hot Wallet `0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503`
+
+| Field | Value |
+|---|---|
+| Shield Score | **76 / 100** |
+| Grade | **A** |
+| Tier | **🟢 ALLOW** |
+| Threat Classification | `clean` |
+| Threat Confidence | 0.76 |
+| Registry Match | **None** — organic result only |
+| Shield Flags | `counterparty_concentration` (minor; does not downgrade ALLOW tier) |
+| Wallet Age | 327 days |
+| Confidence | 0.78 |
+
+**Behavioral signals that drove ALLOW:**
+- 327-day transaction history, 41 unique counterparties
+- Verified protocol interactions: DAI, MakerDAO, USDC, USDT, Aave, Balancer, 1inch
+- Zero failed transactions
+- High counterparty diversity consistent with legitimate high-volume DeFi activity
+
+**Significance:** This is the first confirmation that the ALLOW tier is reachable through
+behavioral quality alone, with no registry assistance. The `counterparty_concentration`
+flag fired (single counterparty ≥ 70% of volume — expected for exchange hot wallets) but
+at score 76 this sits within the single-flag tolerance at ALLOW tier and does not trigger
+a downgrade. The behavioral floor for organic ALLOW is: long wallet history (6+ months),
+verified protocol interactions, zero failed transactions, and diverse counterparties.
+
+**Comparison — wallets tested in the same session:**
+
+| Wallet | Score | Tier | Registry |
+|---|---|---|---|
+| vitalik.eth `0xd8dA…` | 16 | 🟢 ALLOW | Trusted override |
+| Research wallet `0x7E5F…` | 6 | 🔴 BLOCK | None |
+| Buterin 2018 `0xAb58…` | 15 | 🟢 ALLOW | Trusted override |
+| **Binance hot `0x47ac…`** | **76** | **🟢 ALLOW** | **None — organic** |
+
+The two Buterin addresses confirm the trusted registry override path is working at 0.99
+confidence. The research wallet (receive-only, zero known protocols, 3 flags) confirms
+BLOCK fires correctly for wallets with strongly anomalous behavioral patterns even in the
+absence of a registry match.
+
+---
+
 ### Live Tier Confirmation (v0.3.2)
 
 Rescored against the same three personal investor wallets used in pre-fix testing:
