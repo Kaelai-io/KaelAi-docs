@@ -4,6 +4,145 @@ All notable changes to the KAT Score API are documented here.
 
 ---
 
+## v0.3.2 — Shield Empty Wallet Handling & DeFi Language Cleanup
+**Released: 2026-05-23**
+
+### Overview
+
+Patch release correcting four behavioural issues in Shield mode scoring.
+The most impactful fix changes how Shield handles wallets with no transaction
+history: previously these returned BLOCK at score 0, which was incorrect —
+an unknown wallet is not the same as a dangerous one. All four fixes are live.
+
+---
+
+### What Changed
+
+#### Fix 1 — Empty wallet handling: BLOCK → REVIEW with `insufficient_data` classification
+
+**Root cause:** Wallets returning zero transactions were assigned dimension scores
+of 0 across all five dimensions by the base scorer. After Shield reweighting, the
+resulting shield score of 0 fell below the BLOCK threshold (< 15), triggering an
+automatic BLOCK regardless of whether any threat signals were present. Additionally,
+the `receive_only_pattern` flag was firing for zero-transaction wallets on the
+logic that `outbound_count == 0` — technically true but meaningless with no data.
+
+**Fix:** Two-part change in `shield_scorer.py`:
+
+1. `compute_shield_flags()` — added zero-transaction guard. When `transaction_count`
+   is 0, the engine skips all pattern-based flags (there are no patterns to detect).
+   Only registry-based signals (`tornado_cash_funded` via `mixer_contact_detected`)
+   can fire for wallets with zero transactions.
+
+2. `build_shield_result()` — added an early insufficient-data intercept. When both
+   `transactions_analysed == 0` and `behavioral_features.transaction_count == 0`,
+   and no threat registry match exists, the normal scoring pipeline is bypassed.
+   The wallet receives:
+   - `threat_classification: insufficient_data`
+   - `recommended_action: review`
+   - Plain-English reasoning: *"No transaction history found. Cannot assess behavioral
+     patterns. Recommend manual review before interaction. This wallet shows no threat
+     signals — it is unknown, not dangerous."*
+
+**Confirmed:** TAO wallet `5Dw8w2ec6b4CDG5cXtUPk1qRqjHpAqQb8B1eS1Mu3vUKyfWB` and
+BTC wallet `3NxkswbBJo163PycajjoECWiLSTHSHaHvi` — both previously BLOCK/0,
+now correctly return REVIEW/30 with `insufficient_data`.
+
+**Files changed:** `services/shield_scorer.py`
+
+---
+
+#### Fix 2 — Score floor for zero-transaction wallets: 0 → 30
+
+**Root cause:** All-zero dimension scores produced a shield score of 0, which
+sat in the BLOCK band (0–14) and communicated to consumers that the wallet was
+extremely high risk — semantically incorrect for a wallet that simply has no history.
+
+**Fix:** In the insufficient-data intercept added by Fix 1, `shield_score` is
+hard-set to **30** (lower-middle of the REVIEW band, 25–49). This accurately
+represents uncertainty without implying danger. `confidence` is set to 0.20 and
+`threat_confidence` to 0.25 — both clearly signalling low assessment confidence.
+
+The score floor applies only when the insufficient-data condition is met (zero
+transactions, no threat signals). It does not affect wallets with actual data
+that score legitimately low.
+
+**Files changed:** `services/shield_scorer.py`
+
+---
+
+#### Fix 3 — `block_reason` field added to Shield API response
+
+A new `block_reason` field is now included in Shield responses when
+`recommended_action` is `block`. It does not appear for any other action tier.
+
+**Three possible values:**
+
+| Value | Trigger |
+|---|---|
+| `threat_detected` | Threat registry match, or `tornado_cash_funded` critical flag |
+| `critical_flags` | Multiple high-confidence threat flags firing simultaneously |
+| `insufficient_data` | Zero transaction history reached BLOCK (defensive; should not occur after Fix 1) |
+
+`block_reason` is present in both the top-level response and in the `shield_data`
+JSONB block. This gives downstream protocol security teams the context to
+distinguish between a genuinely dangerous wallet and an edge case.
+
+**Files changed:** `services/shield_scorer.py`
+
+---
+
+#### Fix 4 — Agent language removed from Shield mode reasoning and response labels
+
+**Root cause:** Shield mode is used by DeFi protocols screening real user wallets,
+not agent commerce platforms. However, the base scoring system prompt, risk flag
+labels, scope warnings, and reasoning prefix rules all used agent-specific language
+("autonomous agent", "agent commerce fit", "agent-to-agent commerce").
+
+**Fix:** Four changes:
+
+1. **`SHIELD_SCORING_SYSTEM_PROMPT`** added to `scorer.py` — separate from the
+   existing `SCORING_SYSTEM_PROMPT` (agent mode). Shield prompt instructs the LLM
+   to score for DeFi legitimacy and risk profile, not agent commerce fit. Explicitly
+   prohibits the terms "agent", "autonomous agent", "agent commerce", "agent wallet"
+   in the generated reasoning.
+
+2. **Reasoning prefix rules** in `scorer.py` — when `mode == "shield"` and
+   `overall_score < 40`, the required prefix phrases use DeFi language:
+   - `"This wallet exhibits red flags consistent with malicious or high-risk DeFi activity"`
+   - `"This wallet shows a low DeFi activity profile but no suspicious signals"`
+
+3. **`SHIELD_RISK_FLAG_LABELS`** added to `shield_scorer.py` — replaces
+   `_RISK_FLAG_LABELS` in Shield responses. `low_agent_fit` is remapped to
+   `low_activity_profile` with DeFi-appropriate wording throughout.
+
+4. **`SHIELD_SCOPE_WARNINGS`** added to `shield_scorer.py` — replaces
+   `_SCOPE_WARNINGS` in Shield responses. All references to "agent wallets" and
+   "agent commerce" replaced with DeFi-appropriate equivalents.
+
+`build_shield_result()` applies all Shield-specific label overrides on every
+response, ensuring no agent language escapes into Shield mode output regardless
+of what the base scorer returns.
+
+**Files changed:** `services/shield_scorer.py`, `services/scorer.py`
+
+---
+
+### Live Tier Confirmation (v0.3.2)
+
+Rescored against the same three personal investor wallets used in pre-fix testing:
+
+| Wallet | Chain | Pre-fix | Post-fix | Tier |
+|---|---|---|---|---|
+| `5Dw8w2ec6b4CDG5cXtUPk1qRqjHpAqQb8B1eS1Mu3vUKyfWB` | TAO | 0 / BLOCK / `suspicious_pattern` | **30 / REVIEW / `insufficient_data`** | 🟠 REVIEW |
+| `3NxkswbBJo163PycajjoECWiLSTHSHaHvi` | BTC | 0 / BLOCK / `suspicious_pattern` | **30 / REVIEW / `insufficient_data`** | 🟠 REVIEW |
+| `0xafab46e2ea59f9a55317ad2244c89001a3654200` | ETH | 54 / MONITOR / `clean` | **56 / MONITOR / `clean`** | 🟡 MONITOR |
+
+ETH wallet confirmed stable at MONITOR. No flags fired on any wallet.
+No agent language present in any response field.
+
+---
+
 ## v0.3.1 — Shield TC Detection Hardening
 **Released: 2026-05-22**
 
