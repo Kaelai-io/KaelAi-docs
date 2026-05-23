@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — KaelAi</title>
+  <meta name="description" content="Insights from the agentic economy. Wallet trust scoring, x402 infrastructure, and the future of autonomous agent commerce." />
+  <link rel="canonical" href="https://kaelai.io/blog/" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --teal: #00d4b8;
+      --teal-dim: rgba(0, 212, 184, 0.08);
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --white: #ffffff;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 10, 15, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { font-size: 1.2rem; font-weight: 700; color: var(--white); text-decoration: none; letter-spacing: -0.02em; }
+    .nav-logo span { color: var(--teal); }
+    .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--teal); }
+    .nav-cta { background: var(--teal); color: #000 !important; padding: 0.45rem 1.1rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem !important; }
+    .nav-x { display: flex; align-items: center; color: var(--muted) !important; }
+    .nav-x svg { width: 18px; height: 18px; fill: currentColor; }
+    .blog-hero { padding: 5rem 2rem 3rem; max-width: 860px; margin: 0 auto; border-bottom: 1px solid var(--border); }
+    .blog-hero-label { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 1rem; }
+    .blog-hero h1 { font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700; letter-spacing: -0.03em; color: var(--white); line-height: 1.15; margin-bottom: 1rem; }
+    .blog-hero p { font-size: 1.05rem; color: #e8e8e8; max-width: 540px; }
+    .posts-container { max-width: 860px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+    .post-card { display: block; text-decoration: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; transition: border-color 0.2s, transform 0.2s; position: relative; overflow: hidden; }
+    .post-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--teal); opacity: 0; transition: opacity 0.2s; }
+    .post-card:hover { border-color: rgba(0, 212, 184, 0.3); transform: translateY(-2px); }
+    .post-card:hover::before { opacity: 1; }
+    .post-meta { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.85rem; }
+    .post-date { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.04em; }
+    .post-tag { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: var(--teal-dim); padding: 0.2rem 0.6rem; border-radius: 4px; }
+    .post-title { font-size: 1.3rem; font-weight: 700; color: var(--white); letter-spacing: -0.02em; line-height: 1.3; margin-bottom: 0.65rem; }
+    .post-excerpt { font-size: 0.92rem; color: #e8e8e8; line-height: 1.65; margin-bottom: 1.25rem; }
+    .post-readmore { font-size: 0.82rem; font-weight: 600; color: var(--teal); display: flex; align-items: center; gap: 0.4rem; }
+    .post-readmore svg { width: 14px; height: 14px; transition: transform 0.2s; }
+    .post-card:hover .post-readmore svg { transform: translateX(3px); }
+    footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; }
+    footer p { font-size: 0.82rem; color: var(--muted); }
+    footer a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer a:hover { color: var(--teal); }
+    @media (max-width: 640px) {
+      nav { padding: 0 1rem; }
+.nav-cta { display: none; }
+      .nav-links { gap: 1rem; }
+      .blog-hero { padding: 3rem 1rem 2rem; }
+      .posts-container { padding: 2rem 1rem 4rem; }
+      .post-card { padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="nav-logo">Kael<span>Ai</span></a>
+    <ul class="nav-links">
+  <li><a href="/agent">Agent</a></li>
+  <li><a href="/shield">Shield</a></li>
+  <li><a href="/docs">Docs</a></li>
+  <li><a href="/blog/" class="active">Blog</a></li>
+  <li><a href="/pricing">Pricing</a></li>
+  <li><a href="https://github.com/kaelai-io" target="_blank" rel="noopener">GitHub</a></li>
+  <li><a href="/#pricing" class="nav-cta">Get API Key</a></li>
+</ul>
+  </nav>
+  <section class="blog-hero">
+    <p class="blog-hero-label">KaelAi Blog</p>
+    <h1>Insights from the<br>Agentic Economy</h1>
+    <p>Wallet trust scoring, x402 infrastructure, and the tools the autonomous agent economy needs to scale safely.</p>
+  </section>
+  <main class="posts-container">
+    <a href="/blog/defi-840m-onchain-fingerprints.html" class="post-card">
+      <div class="post-meta">
+        <span class="post-date">May 22, 2026</span>
+        <span class="post-tag">DeFi Security</span>
+      </div>
+      <h2 class="post-title">DeFi Lost $840M in 60 Days. The Onchain Fingerprints Were Visible the Whole Time.</h2>
+      <p class="post-excerpt">April and May 2026 will be remembered as the worst stretch in DeFi history. We scored the attacker wallets behind Drift, Kelp DAO, and Verus Bridge. Every single one came back CCC. The behavioral signals were there the whole time.</p>
+      <span class="post-readmore">
+        Read article
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
+
+    <a href="/blog/why-x402-servers-need-wallet-trust-scoring.html" class="post-card">
+      <div class="post-meta">
+        <span class="post-date">April 11, 2026</span>
+        <span class="post-tag">x402</span>
+      </div>
+      <h2 class="post-title">Why x402 Servers Need Wallet Trust Scoring</h2>
+      <p class="post-excerpt">The x402 protocol solves the payment layer. It doesn't solve the trust layer. As agentic commerce scales — from task markets to income-based agent lending to universal payment infrastructure — that distinction is going to matter a lot.</p>
+      <span class="post-readmore">
+        Read article
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
+  </main>
+  <footer>
+    <p>© 2026 KaelAi &middot; <a href="/">kaelai.io</a> &middot; <a href="https://x.com/Kaelai_" target="_blank" rel="noopener">@Kaelai_</a></p>
+  </footer>
+</body>
+</html>

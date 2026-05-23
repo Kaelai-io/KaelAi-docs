@@ -17,6 +17,7 @@
       <a href="/agent" class="active">Agent</a>
       <a href="/shield">Shield</a>
       <a href="/docs">Docs</a>
+      <a href="/blog">Blog</a>
       <a href="/pricing">Pricing</a>
     </div>
     <a href="/agent" class="btn btn-primary btn-sm nav-cta">Get API Key</a>
@@ -28,6 +29,7 @@
     <a href="/agent">Agent</a>
     <a href="/shield">Shield</a>
     <a href="/docs">Docs</a>
+    <a href="/blog">Blog</a>
     <a href="/pricing">Pricing</a>
     <a href="/agent" class="btn btn-primary">Get API Key</a>
   </div>
@@ -317,6 +319,19 @@
       <p>Start free. Scale as you grow. Founding member rates locked for life.</p>
     </div>
 
+    <!-- Billing frequency toggle -->
+    <div class="pricing-toggles">
+      <div class="pricing-toggle-group" id="agent-freq-toggle">
+        <button class="pricing-toggle-btn active" onclick="setAgentFreq('monthly',this)">Monthly</button>
+        <button class="pricing-toggle-btn" onclick="setAgentFreq('annual',this)">Annual <span class="toggle-save-label">Save up to 20%</span></button>
+      </div>
+    </div>
+
+    <!-- Founding slots notice (hidden by default, shown when slots = 0) -->
+    <div id="agent-slots-closed" class="info-box" style="display:none; margin-bottom:24px; max-width:640px; margin-left:auto; margin-right:auto; text-align:center;">
+      Founding rates - limited slots remaining.
+    </div>
+
     <div class="pricing-grid-4">
 
       <!-- Free -->
@@ -355,11 +370,14 @@
 
       <!-- Builder -->
       <div class="pricing-card featured">
-        <div class="pricing-badge">Founding Member Rate</div>
+        <div class="pricing-badge agent-founding-badge">Founding Member Rate</div>
+        <div class="pricing-badge agent-standard-badge" style="display:none; background: var(--border-2); color: var(--text-2);">Standard Rate</div>
         <div>
           <div class="pricing-name">Builder</div>
-          <div class="pricing-price"><sup>$</sup>24.99</div>
-          <div class="pricing-per">per month · founding rate</div>
+          <div class="pricing-price"><sup>$</sup><span id="ab-price">24.99</span></div>
+          <div class="pricing-standard-rate" id="ab-standard-cross">$29.99 standard</div>
+          <div class="pricing-per" id="ab-per">per month · founding rate</div>
+          <div class="pricing-per" id="ab-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">3,000 queries / month</li>
@@ -369,33 +387,130 @@
           <li class="pricing-feature">Priority email support</li>
           <li class="pricing-feature">Rate locked for life</li>
         </ul>
-        <div class="pricing-founder-note">Founding rate - locked while subscribed</div>
-        <a href="/signup" class="btn btn-primary">Subscribe</a>
+        <div class="pricing-founder-note agent-founding-note">Founding rate - locked while subscribed</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TIYc7B8cESR1et9VXGSq5BC&plan=Builder"
+           class="btn btn-primary" id="ab-btn"
+           data-founding-monthly="price_1TIYc7B8cESR1et9VXGSq5BC"
+           data-founding-annual="price_1TItvSB8cESR1et9PsM1GQzR"
+           data-standard-monthly="price_1TItywB8cESR1et9yaUB4Xxx"
+           data-standard-annual="price_1TItzpB8cESR1et9B0TxQ8qB"
+           data-plan="Builder">Subscribe</a>
       </div>
 
       <!-- Scale -->
       <div class="pricing-card">
-        <div class="pricing-badge" style="background: var(--green-dim);">Founding Member Rate</div>
+        <div class="pricing-badge agent-founding-badge" style="background: var(--green-dim);">Founding Member Rate</div>
+        <div class="pricing-badge agent-standard-badge" style="display:none; background: var(--border-2); color: var(--text-2);">Standard Rate</div>
         <div>
           <div class="pricing-name">Scale</div>
-          <div class="pricing-price"><sup>$</sup>129.99</div>
-          <div class="pricing-per">per month · founding rate</div>
+          <div class="pricing-price"><sup>$</sup><span id="as-price">129.99</span></div>
+          <div class="pricing-standard-rate" id="as-standard-cross">$149 standard</div>
+          <div class="pricing-per" id="as-per">per month · founding rate</div>
+          <div class="pricing-per" id="as-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
-          <li class="pricing-feature">20,000 queries / month</li>
+          <li class="pricing-feature">15,000 queries / month</li>
           <li class="pricing-feature">$0.006 per query overage</li>
           <li class="pricing-feature">All 10 chains</li>
           <li class="pricing-feature">Full API access</li>
           <li class="pricing-feature">Priority support + SLA</li>
           <li class="pricing-feature">Rate locked for life</li>
         </ul>
-        <div class="pricing-founder-note">Founding rate - locked while subscribed</div>
-        <a href="/signup" class="btn btn-primary">Subscribe</a>
+        <div class="pricing-founder-note agent-founding-note">Founding rate - locked while subscribed</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TItwZB8cESR1et9emW3a19n&plan=Scale"
+           class="btn btn-primary" id="as-btn"
+           data-founding-monthly="price_1TItwZB8cESR1et9emW3a19n"
+           data-founding-annual="price_1TItxwB8cESR1et9i0HKem5c"
+           data-standard-monthly="price_1TIu1FB8cESR1et9N7dCwzPg"
+           data-standard-annual="price_1TIu98B8cESR1et9fig51yEU"
+           data-plan="Scale">Subscribe</a>
       </div>
 
     </div>
   </div>
 </section>
+
+<script>
+// ── Agent pricing: frequency toggle + founding slot check ────────────────────
+
+const AGENT_DATA = {
+  builder: {
+    foundingMonthly:  { price: '24.99', standard: '$29.99 standard', per: 'per month · founding rate',          annualNote: '' },
+    foundingAnnual:   { price: '19.99', standard: '$24.99 standard', per: 'per month - billed annually',        annualNote: 'Billed as $239.88/year - save $60' },
+    standardMonthly:  { price: '29.99', standard: '',               per: 'per month',                          annualNote: '' },
+    standardAnnual:   { price: '24.99', standard: '',               per: 'per month - billed annually',        annualNote: 'Billed as $299.88/year' },
+  },
+  scale: {
+    foundingMonthly:  { price: '129.99', standard: '$149 standard', per: 'per month · founding rate',           annualNote: '' },
+    foundingAnnual:   { price: '109.99', standard: '$124.99 standard', per: 'per month - billed annually',      annualNote: 'Billed as $1,319.88/year - save $240' },
+    standardMonthly:  { price: '149',    standard: '',              per: 'per month',                           annualNote: '' },
+    standardAnnual:   { price: '124.99', standard: '',              per: 'per month - billed annually',         annualNote: 'Billed as $1,499.88/year' },
+  },
+};
+
+let agentFreq     = 'monthly';
+let agentFounding = true;
+
+function updateAgentPricing() {
+  const isF = agentFounding;
+  const freq = agentFreq;
+
+  document.querySelectorAll('.agent-founding-badge').forEach(el => el.style.display = isF ? '' : 'none');
+  document.querySelectorAll('.agent-standard-badge').forEach(el => el.style.display = isF ? 'none' : '');
+  document.querySelectorAll('.agent-founding-note').forEach(el => el.style.display  = isF ? '' : 'none');
+  document.getElementById('agent-slots-closed').style.display = isF ? 'none' : '';
+
+  function applyCard(ids, data, founding, freq) {
+    const key = (founding && data[founding + (freq === 'monthly' ? 'Monthly' : 'Annual')])
+      ? founding + (freq === 'monthly' ? 'Monthly' : 'Annual')
+      : 'standard' + (freq === 'monthly' ? 'Monthly' : 'Annual');
+    const d = data[key];
+    if (!d) return;
+    const g = id => document.getElementById(id);
+    if (g(ids.price)) g(ids.price).textContent = d.price;
+    if (ids.std && g(ids.std)) {
+      g(ids.std).textContent   = d.standard;
+      g(ids.std).style.display = d.standard ? '' : 'none';
+    }
+    if (g(ids.per)) g(ids.per).textContent = d.per;
+    if (ids.note && g(ids.note)) {
+      g(ids.note).textContent   = d.annualNote;
+      g(ids.note).style.display = d.annualNote ? '' : 'none';
+    }
+    const btn = g(ids.btn);
+    if (btn) {
+      const pid = agentFounding
+        ? (btn.getAttribute('data-founding-' + freq) || btn.getAttribute('data-standard-' + freq))
+        : btn.getAttribute('data-standard-' + freq);
+      if (pid) btn.href = '/api/v1/billing/checkout?price_id=' + pid + '&plan=' + encodeURIComponent(btn.dataset.plan);
+    }
+  }
+
+  applyCard({ price: 'ab-price', std: 'ab-standard-cross', per: 'ab-per', note: 'ab-annual-note', btn: 'ab-btn' },
+            AGENT_DATA.builder, isF ? 'founding' : 'standard', freq);
+  applyCard({ price: 'as-price', std: 'as-standard-cross', per: 'as-per', note: 'as-annual-note', btn: 'as-btn' },
+            AGENT_DATA.scale, isF ? 'founding' : 'standard', freq);
+}
+
+function setAgentFreq(freq, btn) {
+  agentFreq = freq;
+  document.querySelectorAll('#agent-freq-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updateAgentPricing();
+}
+
+// Live founding slot check
+(async function() {
+  try {
+    const res  = await fetch('/api/v1/billing/agent-slots');
+    const data = await res.json();
+    agentFounding = data.founding_period_active;
+    updateAgentPricing();
+  } catch(e) {
+    updateAgentPricing(); // default to founding on error
+  }
+})();
+</script>
 
 <!-- ── Footer ── -->
 <footer class="footer">
@@ -409,6 +524,7 @@
       <a href="/agent">Agent</a>
       <a href="/shield">Shield</a>
       <a href="/docs">Docs</a>
+      <a href="/blog">Blog</a>
       <a href="/pricing">Pricing</a>
     </nav>
   </div>

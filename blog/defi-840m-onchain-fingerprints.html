@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeFi Lost $840M in 60 Days. The Onchain Fingerprints Were Visible the Whole Time. — KaelAi Blog</title>
+  <meta name="description" content="April and May 2026 will be remembered as the worst stretch in DeFi history. We scored the attacker wallets. Every single one came back CCC. The behavioral signals were there the whole time." />
+  <link rel="canonical" href="https://kaelai.io/blog/defi-840m-onchain-fingerprints.html" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "DeFi Lost $840M in 60 Days. The Onchain Fingerprints Were Visible the Whole Time.",
+    "datePublished": "2026-05-22",
+    "author": { "@type": "Organization", "name": "KaelAi" },
+    "publisher": { "@type": "Organization", "name": "KaelAi", "url": "https://kaelai.io" },
+    "description": "April and May 2026 will be remembered as the worst stretch in DeFi history. We scored the attacker wallets. Every single one came back CCC."
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #080b0d;
+      --bg-card:      #0e1317;
+      --bg-card2:     #111720;
+      --border:       #1e2a32;
+      --border-glow:  #1a3a30;
+      --teal:         #00c896;
+      --teal-dim:     #00a87b;
+      --teal-faint:   rgba(0, 200, 150, 0.08);
+      --teal-glow:    rgba(0, 200, 150, 0.15);
+      --text:         #e2e8ed;
+      --text-muted:   #6b7f8a;
+      --text-dim:     #3d5260;
+      --red:          #ff4d6a;
+      --yellow:       #f0b429;
+      --font:         'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ─────────────────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8, 11, 13, 0.92);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .nav-logo {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .nav-logo span { color: var(--text-muted); font-weight: 300; }
+
+    .nav-pill {
+      font-size: 10px;
+      color: var(--teal);
+      border: 1px solid var(--teal-dim);
+      padding: 2px 9px;
+      border-radius: 100px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      opacity: 0.85;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      padding: 6px 18px;
+      border-radius: 3px;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.active { color: var(--teal); }
+
+    @media (max-width: 600px) {
+      .nav-inner { padding: 0 16px; }
+      .nav-pill   { display: none; }
+      .nav-links a { padding: 6px 10px; font-size: 11px; }
+    }
+
+    @media (max-width: 400px) {
+      .nav-links a { padding: 6px 7px; }
+    }
+
+    /* ── Article Layout ──────────────────────────────────────────────── */
+    .article-wrap {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Post Header ─────────────────────────────────────────────────── */
+    .post-header {
+      padding: 72px 0 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .post-header .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      transition: color 0.15s;
+    }
+
+    .post-header .back-link::before { content: '←'; }
+    .post-header .back-link:hover { color: var(--teal); text-decoration: none; }
+
+    .post-header .section-label {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 16px;
+    }
+
+    .post-header h1 {
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 20px;
+    }
+
+    .post-meta {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Article Body ─────────────────────────────────────────────────── */
+    .post-body {
+      padding: 56px 0 96px;
+    }
+
+    .post-body p {
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    .post-body p strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .post-body h2 {
+      font-size: clamp(17px, 2.5vw, 21px);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 52px 0 16px;
+      line-height: 1.3;
+    }
+
+    .post-body h2::before {
+      content: '// ';
+      color: var(--teal);
+      font-weight: 400;
+    }
+
+    .post-body h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 32px 0 10px;
+      letter-spacing: 0.02em;
+    }
+
+    .post-body ul {
+      margin: 0 0 28px 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .post-body ul li {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.85;
+      margin-bottom: 10px;
+      font-weight: 300;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .post-body ul li::before {
+      content: '—';
+      color: var(--teal);
+      position: absolute;
+      left: 0;
+      font-weight: 400;
+    }
+
+    .post-body ul li strong { color: var(--text); font-weight: 600; }
+
+    /* ── Horizontal rule ─────────────────────────────────────────────── */
+    .post-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* ── Blockquote ──────────────────────────────────────────────────── */
+    .post-body blockquote {
+      border-left: 3px solid var(--teal);
+      margin: 32px 0;
+      padding: 6px 24px;
+      background: var(--teal-faint);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .post-body blockquote p {
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 400;
+      font-style: italic;
+      margin-bottom: 0;
+      line-height: 1.75;
+    }
+
+    /* ── Inline code ─────────────────────────────────────────────────── */
+    .post-body code {
+      background: var(--teal-faint);
+      border: 1px solid var(--border-glow);
+      color: var(--teal);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+
+    /* ── Callout box ──────────────────────────────────────────────────── */
+    .callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--teal);
+      border-radius: 0 6px 6px 0;
+      padding: 20px 24px;
+      margin: 32px 0;
+    }
+
+    .callout-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+
+    .callout p {
+      font-size: 13px !important;
+      margin-bottom: 0 !important;
+      color: var(--text-muted) !important;
+    }
+
+    /* ── Stat row ────────────────────────────────────────────────────── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin: 32px 0;
+    }
+
+    .stat-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px 20px;
+    }
+
+    .stat-box .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: -0.02em;
+      margin-bottom: 4px;
+    }
+
+    .stat-box .stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Fix boxes ───────────────────────────────────────────────────── */
+    .fix-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 18px 22px;
+      margin: 16px 0;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .fix-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--teal);
+      background: var(--teal-faint);
+      border: 1px solid var(--teal-dim);
+      border-radius: 4px;
+      padding: 3px 8px;
+      white-space: nowrap;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .fix-text {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    .fix-text strong { color: var(--text); font-weight: 600; }
+
+    /* ── CTA block ───────────────────────────────────────────────────── */
+    .post-cta {
+      background: var(--bg-card);
+      border: 1px solid var(--teal-dim);
+      border-radius: 6px;
+      padding: 36px 28px;
+      margin: 48px 0 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .post-cta::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), transparent);
+    }
+
+    .post-cta h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .post-cta p {
+      font-size: 13px !important;
+      color: var(--text-muted) !important;
+      margin-bottom: 20px !important;
+      font-weight: 300 !important;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      background: var(--teal);
+      color: #040608;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 12px 28px;
+      border-radius: 4px;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+
+    .cta-btn:hover {
+      background: #00e8af;
+      box-shadow: 0 0 24px rgba(0, 200, 150, 0.35);
+      text-decoration: none;
+    }
+
+    /* ── Post footer ─────────────────────────────────────────────────── */
+    .post-follow {
+      margin-top: 40px;
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    .post-follow a { color: var(--teal); }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 36px 0;
+    }
+
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-copy a { color: var(--text-muted); }
+    .footer-copy a:hover { color: var(--teal); }
+
+    .footer-tag {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Mobile ──────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .post-header { padding: 48px 0 36px; }
+      .post-body { padding: 40px 0 72px; }
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    .post-body { --text-muted: #e8e8e8; }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="/" class="nav-logo">KAEL<span>AI</span></a>
+      <div class="nav-pill">KAT SCORE API</div>
+    </div>
+    <nav class="nav-links" aria-label="Site navigation">
+      <a href="/agent">Agent</a>
+      <a href="/shield">Shield</a>
+      <a href="/docs">Docs</a>
+      <a href="/blog" class="active">Blog</a>
+      <a href="/pricing">Pricing</a>
+    </nav>
+  </div>
+</nav>
+
+<!-- ── Post Header ────────────────────────────────────────────────────────── -->
+<header class="post-header">
+  <div class="article-wrap">
+    <a class="back-link" href="/blog">Blog</a>
+    <div class="section-label">// defi security</div>
+    <h1>DeFi Lost $840M in 60 Days. The Onchain Fingerprints Were Visible the Whole Time.</h1>
+    <div class="post-meta">May 22, 2026 &nbsp;&mdash;&nbsp; KaelAi</div>
+  </div>
+</header>
+
+<!-- ── Post Body ──────────────────────────────────────────────────────────── -->
+<main class="post-body">
+  <div class="article-wrap">
+
+    <p>
+      April and May 2026 will be remembered as the worst stretch in DeFi history. More than $840M drained across 24+ protocols in 60 days. Drift Protocol. Kelp DAO. Verus Bridge. Step Finance. Truebit. Resolv Labs. The list keeps growing.
+    </p>
+
+    <p>
+      Every post-mortem says the same thing: sophisticated attack, complex exploit, hard to anticipate.
+    </p>
+
+    <p>We decided to look at the wallets instead.</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-value">$840M+</div>
+        <div class="stat-label">Lost in 60 days</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">24+</div>
+        <div class="stat-label">Protocols affected</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">CCC</div>
+        <div class="stat-label">Every attacker wallet grade</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Would have returned BLOCK or FLAG</div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h2>The Incidents</h2>
+
+    <p>
+      April set the benchmark. Drift Protocol lost $285M on April 1st. Kelp DAO lost $292M on April 18th. Combined that's $577M in 18 days, both attributed to the same threat actor.
+    </p>
+
+    <p>
+      May continued the pattern. Verus Bridge lost $11.4M on May 18th, joining a growing casualty list that included Step Finance ($27–40M), Truebit ($26.2M), Resolv Labs ($25M+), and more than a dozen others.
+    </p>
+
+    <p>
+      Not every hack involves the same attack surface. Step Finance was a private key compromise, where attackers targeted executive devices and drained the protocol's own treasury wallets. Truebit and Resolv were smart contract logic exploits. <strong>Behavioral wallet scoring doesn't solve those problems.</strong> Those require device security, key management, and code audits.
+    </p>
+
+    <p>
+      What behavioral scoring does solve is a different problem: identifying the wallets that show up at your protocol before they strike. Drift, Kelp DAO, and Verus Bridge all involved distinct attacker wallets with publicly confirmed addresses and behavioral histories sitting onchain before a single dollar moved. Those are the wallets we scored.
+    </p>
+
+    <hr>
+
+    <h2>What We Did</h2>
+
+    <p>
+      We scored the attacker wallets using KaelAi Shield, our behavioral threat detection product built for DeFi protocols. We did this after the fact, without knowing which wallets were attackers. Just wallet addresses and chains. The behavioral engine did the rest.
+    </p>
+
+    <blockquote>
+      <p>Every single wallet came back CCC, our lowest grade, with BLOCK or FLAG recommendations.</p>
+    </blockquote>
+
+    <hr>
+
+    <h2>What the Wallets Had in Common</h2>
+
+    <p>
+      Across Drift, Kelp DAO, and Verus, the attacker wallets shared a consistent behavioral fingerprint.
+    </p>
+
+    <h3>Receive-only staging pattern</h3>
+    <p>
+      Every Drift attacker wallet had zero outbound transactions despite receiving massive inbound volume. This is a classic staging address signature: load the wallet, execute the exploit, drain everything out in one move. No legitimate DeFi participant operates this way.
+    </p>
+
+    <h3>Extreme value spike ratios</h3>
+    <p>
+      One Drift wallet showed a max-to-mean transaction value ratio of 2.7 billion. That number represents a single massive drain transaction dwarfing everything else — a mathematical signature of staged exploit infrastructure.
+    </p>
+
+    <h3>Zero known protocol interactions</h3>
+    <p>
+      None of the Drift or Kelp attacker wallets had interacted with a single verified DeFi protocol in their sampled transaction history. Attacker wallets don't warm up by using Uniswap or Aave. They exist purely for the exploit.
+    </p>
+
+    <h3>Coordinated creation windows</h3>
+    <p>
+      All four Drift attacker wallets were created within the same 44-day window. When multiple wallets appear at the same time with identical behavioral profiles, that's coordinated infrastructure, not coincidence.
+    </p>
+
+    <h3>Tornado Cash funding</h3>
+    <p>
+      The Kelp DAO attacker wallet was funded via Tornado Cash before the exploit — a deliberate attempt to obscure the funding source and origin chain.
+    </p>
+
+    <hr>
+
+    <h2>The Honest Part</h2>
+
+    <p>
+      The Verus Bridge case taught us something important about the limits of behavioral scoring, and we're sharing it because the security community deserves honest tooling.
+    </p>
+
+    <p>
+      The attacker wallet scored CCC and returned a FLAG recommendation — correctly identified as suspicious. But our <code>tornado_cash_funded</code> flag didn't fire, even though PeckShield confirmed the wallet was TC-funded 14 hours before the exploit.
+    </p>
+
+    <p>
+      Why? The TC funding was two hops back. Tornado Cash funded an upstream wallet, which funded the exploit wallet through an internal bridge transaction. Our scoring engine was reading normal transactions only, not internal calls. The entire ~5,400 ETH funding of this wallet arrived through internal bridge calls — completely invisible to our detector.
+    </p>
+
+    <p><strong>We found two bugs. We fixed them both.</strong></p>
+
+    <div class="fix-box">
+      <div class="fix-badge">FIX 1</div>
+      <div class="fix-text">
+        <strong>Internal transaction fetching is now live in Shield mode,</strong> expanding counterparty coverage by 55% on this wallet. Single-hop TC funding will now be caught.
+      </div>
+    </div>
+
+    <div class="fix-box">
+      <div class="fix-badge">FIX 2</div>
+      <div class="fix-text">
+        <strong>ERC-20 transfer senders are now included in the counterparty set.</strong> TC pools that deliver via token transfer events are now detectable.
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-label">// the remaining limitation</div>
+      <p>Two-hop TC detection is on our Phase 2 roadmap. The Verus wallet's BLOCK recommendation came from the exploit registry — the correct control for confirmed attacker addresses. The behavioral scoring correctly returned FLAG based on new wallet patterns and counterparty concentration, which would have warranted manual review before any protocol interaction.</p>
+    </div>
+
+    <p>
+      We're publishing this because the security community deserves honest tooling, not products that claim to catch everything. Knowing what a tool catches and what it misses is the only way to build a complete security stack.
+    </p>
+
+    <hr>
+
+    <h2>Why Protocols Aren't Catching This</h2>
+
+    <p>
+      Most DeFi security spending goes toward smart contract audits, bridge security reviews, and multisig governance. All critical. None of them screen the wallets interacting with the protocol in real time.
+    </p>
+
+    <p>
+      The attacker gets in before any flag is raised. By the time the exploit executes, the behavioral signals have been sitting onchain for days or weeks — visible to anyone reading them. Most protocols aren't reading them.
+    </p>
+
+    <hr>
+
+    <h2>What Behavioral Scoring Changes</h2>
+
+    <p>
+      KaelAi Shield isn't a replacement for smart contract audits. It's a complementary layer that answers a different question — not <em>is this contract secure</em> but <em>is this wallet trustworthy enough to interact with it?</em>
+    </p>
+
+    <p>
+      A single API call returns a five-tier threat assessment — BLOCK, FLAG, REVIEW, MONITOR, or ALLOW — based on behavioral analysis across 10 chains. The exploit registry checks every queried wallet against confirmed attacker addresses from past incidents in real time. Tornado Cash funding detection, coordinated creation window analysis, and staging pattern recognition run on every Shield query.
+    </p>
+
+    <p>
+      The attacker wallets behind April and May's biggest hacks would have returned BLOCK or FLAG recommendations before they ever touched a protocol.
+    </p>
+
+    <hr>
+
+    <h2>The Next Hack Is Coming</h2>
+
+    <p>
+      $840M in 60 days isn't an anomaly. It's a stress test that DeFi keeps failing because the security stack is incomplete. Audits, bridges, and multisigs protect the protocol. Nothing is protecting the entry point.
+    </p>
+
+    <p>
+      The behavioral signals are there. They're onchain. They're readable. The question is whether your protocol is reading them before the next $285M disappears.
+    </p>
+
+    <!-- ── CTA ─────────────────────────────────────────────────────── -->
+    <div class="post-cta">
+      <h3>Add the layer that's missing</h3>
+      <p>KaelAi Shield returns a five-tier threat assessment on any wallet across 10 chains. One API call. Results in seconds. Free to start.</p>
+      <a class="cta-btn" href="/shield">kaelai.io/shield →</a>
+    </div>
+
+    <p class="post-follow">
+      Follow <a href="https://x.com/Kaelai_" target="_blank" rel="noopener">@Kaelai_</a> on X for updates on KaelAi Shield, new chain integrations, and case studies from the agentic economy.
+    </p>
+
+  </div>
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">
+      Kael &copy; 2026 &mdash;
+      hello@kaelai.io &mdash;
+      <a href="/contact">Contact</a> &mdash;
+      <a href="/docs">Docs</a> &mdash;
+      <a href="/blog">Blog</a> &mdash;
+      <a href="/billing">Billing</a> &mdash;
+      <a href="https://github.com/Kaelai-io" target="_blank" rel="noopener">GitHub</a> &mdash;
+      <a href="https://x.com/Kaelai_" target="_blank" rel="noopener">X / Twitter</a> &mdash;
+      <a href="mailto:hello@kaelai.io?subject=Bug%20Report%20%E2%80%94%20Kael%20Beta&body=Page%3A%20%0ADescription%3A%20%0AExpected%3A%20%0AActual%3A%20">Report a bug</a>
+    </div>
+    <div class="footer-tag">Built for the agent economy</div>
+  </div>
+</footer>
+
+<a href="mailto:hello@kaelai.io?subject=Bug%20Report%20%E2%80%94%20Kael%20Beta&body=Page%3A%20%0ADescription%3A%20%0AExpected%3A%20%0AActual%3A%20" id="bug-float" style="
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  background:#080b0d;
+  border:1px solid rgba(0,200,150,0.30);
+  border-radius:8px;
+  padding:10px 16px;
+  font-family:'JetBrains Mono','Courier New',monospace;
+  font-size:11px;
+  color:rgba(0,200,150,0.60);
+  text-decoration:none;
+  z-index:1000;
+  transition:border-color 0.2s,color 0.2s;
+  line-height:1;
+" onmouseover="this.style.borderColor='rgba(0,200,150,0.70)';this.style.color='rgba(0,200,150,0.90)'"
+   onmouseout="this.style.borderColor='rgba(0,200,150,0.30)';this.style.color='rgba(0,200,150,0.60)'"
+>🐛 Report a bug</a>
+<style>
+  @media (max-width: 640px) {
+    #bug-float { bottom:16px !important; right:16px !important; padding:8px 12px !important; font-size:10px !important; }
+  }
+</style>
+
+</body>
+</html>

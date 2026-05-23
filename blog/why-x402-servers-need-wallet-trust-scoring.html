@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Why x402 Servers Need Wallet Trust Scoring — KaelAi Blog</title>
+  <meta name="description" content="The x402 protocol solves the payment layer. It doesn't solve the trust layer. And as the protocol scales, that distinction is going to matter a lot." />
+  <link rel="canonical" href="https://kaelai.io/blog/why-x402-servers-need-wallet-trust-scoring.html" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why x402 Servers Need Wallet Trust Scoring",
+    "datePublished": "2026-04-11",
+    "author": { "@type": "Organization", "name": "KaelAi" },
+    "publisher": { "@type": "Organization", "name": "KaelAi", "url": "https://kaelai.io" },
+    "description": "The x402 protocol solves the payment layer. It doesn't solve the trust layer. And as the protocol scales, that distinction is going to matter a lot."
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #080b0d;
+      --bg-card:      #0e1317;
+      --bg-card2:     #111720;
+      --border:       #1e2a32;
+      --border-glow:  #1a3a30;
+      --teal:         #00c896;
+      --teal-dim:     #00a87b;
+      --teal-faint:   rgba(0, 200, 150, 0.08);
+      --teal-glow:    rgba(0, 200, 150, 0.15);
+      --text:         #e2e8ed;
+      --text-muted:   #6b7f8a;
+      --text-dim:     #3d5260;
+      --red:          #ff4d6a;
+      --yellow:       #f0b429;
+      --font:         'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 15px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--teal); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Nav ────────────────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8, 11, 13, 0.92);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .nav-logo {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--teal);
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .nav-logo span { color: var(--text-muted); font-weight: 300; }
+
+    .nav-pill {
+      font-size: 10px;
+      color: var(--teal);
+      border: 1px solid var(--teal-dim);
+      padding: 2px 9px;
+      border-radius: 100px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      opacity: 0.85;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links a {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      padding: 6px 18px;
+      border-radius: 3px;
+      transition: color 0.15s;
+      white-space: nowrap;
+    }
+
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-links a.active { color: var(--teal); }
+
+    @media (max-width: 600px) {
+      .nav-inner { padding: 0 16px; }
+      .nav-pill   { display: none; }
+      .nav-links a { padding: 6px 10px; font-size: 11px; }
+    }
+
+    @media (max-width: 400px) {
+      .nav-links a { padding: 6px 7px; }
+    }
+
+    /* ── Article Layout ──────────────────────────────────────────────── */
+    .article-wrap {
+      max-width: 740px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Post Header ─────────────────────────────────────────────────── */
+    .post-header {
+      padding: 72px 0 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .post-header .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      transition: color 0.15s;
+    }
+
+    .post-header .back-link::before { content: '←'; }
+    .post-header .back-link:hover { color: var(--teal); text-decoration: none; }
+
+    .post-header .section-label {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 16px;
+    }
+
+    .post-header h1 {
+      font-size: clamp(22px, 4vw, 34px);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 20px;
+    }
+
+    .post-meta {
+      font-size: 12px;
+      color: var(--text-dim);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Article Body ─────────────────────────────────────────────────── */
+    .post-body {
+      padding: 56px 0 96px;
+    }
+
+    .post-body p {
+      font-size: 15px;
+      line-height: 1.85;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    .post-body p strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .post-body h2 {
+      font-size: clamp(17px, 2.5vw, 21px);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin: 52px 0 16px;
+      line-height: 1.3;
+    }
+
+    .post-body h2::before {
+      content: '// ';
+      color: var(--teal);
+      font-weight: 400;
+    }
+
+    .post-body ul {
+      margin: 0 0 28px 0;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .post-body ul li {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.85;
+      margin-bottom: 10px;
+      font-weight: 300;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .post-body ul li::before {
+      content: '—';
+      color: var(--teal);
+      position: absolute;
+      left: 0;
+      font-weight: 400;
+    }
+
+    .post-body ul li strong { color: var(--text); font-weight: 600; }
+
+    /* ── Horizontal rule / section break ────────────────────────────── */
+    .post-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* ── Blockquote ──────────────────────────────────────────────────── */
+    .post-body blockquote {
+      border-left: 3px solid var(--teal);
+      margin: 32px 0;
+      padding: 6px 24px;
+      background: var(--teal-faint);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .post-body blockquote p {
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 400;
+      font-style: italic;
+      margin-bottom: 0;
+      line-height: 1.75;
+    }
+
+    /* ── Inline code ─────────────────────────────────────────────────── */
+    .post-body code {
+      background: var(--teal-faint);
+      border: 1px solid var(--border-glow);
+      color: var(--teal);
+      font-family: var(--font);
+      font-size: 12px;
+      padding: 2px 7px;
+      border-radius: 3px;
+    }
+
+    /* ── Code block ──────────────────────────────────────────────────── */
+    .post-body pre {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px;
+      overflow-x: auto;
+      margin: 28px 0;
+      position: relative;
+    }
+
+    .post-body pre::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--teal), transparent);
+    }
+
+    .post-body pre code {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      padding: 0;
+      border-radius: 0;
+      line-height: 1.7;
+      display: block;
+    }
+
+    /* ── Callout box ──────────────────────────────────────────────────── */
+    .callout {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--teal);
+      border-radius: 0 6px 6px 0;
+      padding: 20px 24px;
+      margin: 32px 0;
+    }
+
+    .callout-label {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+
+    .callout p {
+      font-size: 13px !important;
+      margin-bottom: 0 !important;
+      color: var(--text-muted) !important;
+    }
+
+    /* ── Layers comparison ───────────────────────────────────────────── */
+    .layers {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 28px 24px;
+      margin: 32px 0;
+    }
+
+    .layer-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: start;
+    }
+
+    .layer-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .layer-row:first-child { padding-top: 0; }
+
+    .layer-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--teal);
+      letter-spacing: 0.02em;
+      padding-top: 2px;
+    }
+
+    .layer-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    .layer-desc strong { color: var(--text); font-weight: 600; }
+
+    /* ── CTA block ───────────────────────────────────────────────────── */
+    .post-cta {
+      background: var(--bg-card);
+      border: 1px solid var(--teal-dim);
+      border-radius: 6px;
+      padding: 36px 28px;
+      margin: 48px 0 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .post-cta::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), transparent);
+    }
+
+    .post-cta h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .post-cta p {
+      font-size: 13px !important;
+      color: var(--text-muted) !important;
+      margin-bottom: 20px !important;
+      font-weight: 300 !important;
+    }
+
+    .cta-btn {
+      display: inline-block;
+      background: var(--teal);
+      color: #040608;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 12px 28px;
+      border-radius: 4px;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+
+    .cta-btn:hover {
+      background: #00e8af;
+      box-shadow: 0 0 24px rgba(0, 200, 150, 0.35);
+      text-decoration: none;
+    }
+
+    /* ── Post footer / follow ────────────────────────────────────────── */
+    .post-follow {
+      margin-top: 40px;
+      font-size: 13px;
+      color: var(--text-dim);
+      font-weight: 300;
+      font-style: italic;
+    }
+
+    .post-follow a { color: var(--teal); }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 36px 0;
+    }
+
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .footer-copy {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .footer-copy a { color: var(--text-muted); }
+    .footer-copy a:hover { color: var(--teal); }
+
+    .footer-tag {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.06em;
+    }
+
+    /* ── Mobile ──────────────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .post-header { padding: 48px 0 36px; }
+      .post-body { padding: 40px 0 72px; }
+      .layer-row { grid-template-columns: 1fr; gap: 4px; }
+    }
+    .post-body { --text-muted: #e8e8e8; }
+  </style>
+</head>
+<body>
+
+<!-- ── Nav ──────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-left">
+      <a href="/" class="nav-logo">KAEL<span>AI</span></a>
+      <div class="nav-pill">KAT SCORE API</div>
+    </div>
+    <nav class="nav-links" aria-label="Site navigation">
+      <a href="/agent">Agent</a>
+      <a href="/shield">Shield</a>
+      <a href="/docs">Docs</a>
+      <a href="/blog" class="active">Blog</a>
+      <a href="/pricing">Pricing</a>
+      <a href="https://github.com/Kaelai-io" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg height="14" width="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a href="https://x.com/Kaelai_" target="_blank" rel="noopener" aria-label="X / Twitter">
+        <svg height="14" width="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.91-5.622Zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X
+      </a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+</nav>
+
+<!-- ── Post Header ────────────────────────────────────────────────────────── -->
+<header class="post-header">
+  <div class="article-wrap">
+    <a class="back-link" href="/blog">Blog</a>
+    <div class="section-label">// agent infrastructure</div>
+    <h1>Why x402 Servers Need Wallet Trust Scoring</h1>
+    <div class="post-meta">April 2026 &nbsp;&mdash;&nbsp; KaelAi</div>
+  </div>
+</header>
+
+<!-- ── Post Body ──────────────────────────────────────────────────────────── -->
+<main class="post-body">
+  <div class="article-wrap">
+
+    <p>
+      The x402 protocol is one of the most important primitives to emerge in the agentic economy. It solves a real problem: AI agents can now discover services, pay for them in USDC, and get results — all without a human in the loop. No accounts, no subscriptions, no friction.
+    </p>
+
+    <p>
+      But x402 solves the payment layer. It doesn't solve the trust layer.
+    </p>
+
+    <p>
+      And as the protocol scales, that distinction is going to matter a lot.
+    </p>
+
+    <hr>
+
+    <h2>The Payment Rail Is Ready. The Trust Infrastructure Isn't.</h2>
+
+    <p>
+      In December 2025, Artemis analyzed all x402 transaction activity and found that 47% of transactions were illegitimate — mostly teams gaming leaderboards and manufactured volume. Strip that out and you still have a fast-growing, legitimate ecosystem of agents paying agents for real services.
+    </p>
+
+    <p>
+      But here's what the data also shows: <strong>x402 servers have no native way to know who is paying them.</strong>
+    </p>
+
+    <p>
+      When Xona's agent earned its first $1,000 in autonomous revenue — a genuine milestone in agentic commerce — those payments came from unknown wallets. No identity verification. No behavioral history. No way to know if the wallet on the other side had a clean track record or had been flagged across a dozen other chains.
+    </p>
+
+    <p>
+      That's not a criticism of Xona or x402. It's an architectural reality. The protocol was designed to make payments frictionless. Trust is a separate layer that needs to be built on top.
+    </p>
+
+    <hr>
+
+    <h2>The Problem Gets Bigger as Agentic Commerce Scales</h2>
+
+    <p>Consider what's happening right now in the ecosystem:</p>
+
+    <p>
+      Agentic task markets like Daydreams' Taskmarket are processing real work — agents hiring agents, completing tasks, getting paid via escrow. Their first month of production saw a 50.5% task completion rate. That means nearly half of tasks didn't complete. At scale, a trust signal on the counterparty wallet <em>before</em> the task is assigned changes how that number looks.
+    </p>
+
+    <p>
+      Income-based lending protocols like Krexa are giving AI agents credit against future earnings — no collateral, no co-signer. Their entire underwriting model depends on the wallet's behavioral history. Without cross-chain scoring, a wallet that looks clean on Solana can have flagged history on Ethereum, Base, or BSC that's completely invisible.
+    </p>
+
+    <p>
+      Universal payment infrastructure like Alchemy's AgentPay just launched — one integration for every agentic payment protocol (x402, MPP, A2P, L402). Every merchant who adopts it is now accepting payments from any agent wallet on any protocol. That's powerful. It also means accepting payments from compromised wallets, bad actors, and agents with flagged history across chains.
+    </p>
+
+    <p>The payment layer is getting solved. Fast. The trust layer is lagging behind.</p>
+
+    <hr>
+
+    <h2>What the IETF Is Already Saying</h2>
+
+    <p>
+      In March 2026, an Internet Draft was submitted to the IETF titled <em>"Trust Scoring and Identity Verification for Autonomous AI Agent Payment Transactions."</em>
+    </p>
+
+    <p>The abstract makes the problem explicit:</p>
+
+    <blockquote>
+      <p>"There is no standardised mechanism for a platform to assess an agent's trustworthiness before granting financial access."</p>
+    </blockquote>
+
+    <p>
+      The draft proposes a five-dimension behavioral trust scoring model, a 0–100 trust score, anomaly detection for financial behavior, and a public trust query API — all for AI agents transacting autonomously.
+    </p>
+
+    <p>
+      It's the IETF saying this infrastructure needs to exist. Nobody has been named to build it.
+    </p>
+
+    <p>KaelAi is already live doing exactly this.</p>
+
+    <hr>
+
+    <h2>What Wallet Trust Scoring Actually Looks Like</h2>
+
+    <p>The KAT Score (Known Agent Trust Score) scores any wallet 0–100 across five behavioral dimensions:</p>
+
+    <ul>
+      <li><strong>Transaction history and patterns</strong> — volume, frequency, consistency</li>
+      <li><strong>Counterparty relationships</strong> — who the wallet transacts with and how often</li>
+      <li><strong>Cross-chain activity</strong> — behavior across all supported chains, not just one</li>
+      <li><strong>Risk flags</strong> — known bad actor addresses, suspicious patterns, anomalous velocity</li>
+      <li><strong>Wallet age and maturity</strong> — how long the wallet has been active and building history</li>
+    </ul>
+
+    <p>
+      Scores come with bond-style grades (AAA through CCC), a confidence level, wallet type classification, plain-English reasoning, and recommended actions. Currently live across BTC, ETH, SOL, Base, Polygon, BSC, Arbitrum, AVAX, TAO (Bittensor), and HYPE (Hyperliquid).
+    </p>
+
+    <p>A single API call. Results in seconds.</p>
+
+    <hr>
+
+    <h2>The Real Use Case for x402 Servers</h2>
+
+    <p>Here's the practical integration pattern:</p>
+
+    <p>
+      When an agent hits your x402 endpoint and submits a payment, you have the wallet address. Before you serve the request, score it.
+    </p>
+
+<pre><code>GET https://api.kaelai.io/v1/score/{wallet_address}</code></pre>
+
+    <p>The response tells you:</p>
+
+    <ul>
+      <li><strong>KAT Score</strong> — Known Agent Trust Score (0–100)</li>
+      <li><strong>Grade</strong> — AAA through CCC</li>
+      <li><strong>Risk flags</strong></li>
+      <li><strong>Confidence level</strong></li>
+      <li><strong>Plain-English summary</strong></li>
+    </ul>
+
+    <p>
+      Gate on it however you want. Serve AAA–B wallets immediately. Flag C-grade wallets for review. Block CCC. Set your own thresholds based on your risk tolerance.
+    </p>
+
+    <div class="callout">
+      <div class="callout-label">// the distinction</div>
+      <p>The payment layer handles <em>how</em> money moves. The trust layer tells you <em>who</em> is sending it.</p>
+    </div>
+
+    <hr>
+
+    <h2>The Missing Layer in Every Agentic Stack</h2>
+
+    <div class="layers">
+      <div class="layer-row">
+        <div class="layer-name">ZAuth</div>
+        <div class="layer-desc">Verifies that x402 endpoints are legitimate before your agent pays them. <strong>Protects the payer.</strong></div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-name">SAID Protocol</div>
+        <div class="layer-desc">Gives AI agents on-chain identities and verified badges. <strong>Establishes who an agent is.</strong></div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-name">KaelAi</div>
+        <div class="layer-desc">Scores the behavioral history of the wallet behind that identity, across every chain it's ever touched. <strong>Tells you whether to trust it.</strong></div>
+      </div>
+    </div>
+
+    <p>
+      These aren't competing products. They're three layers of the same trust stack that the agentic economy needs to function at scale.
+    </p>
+
+    <hr>
+
+    <p>
+      KaelAi is live today. Free tier includes 100 queries — no credit card required.
+    </p>
+
+    <p>
+      If you're building an x402 server, a task marketplace, an agentic lending protocol, or any infrastructure where unknown wallets are transacting autonomously — wallet trust scoring is the layer you need before you scale.
+    </p>
+
+    <p>The payment rail is ready. Now build the trust layer on top of it.</p>
+
+    <!-- ── CTA ─────────────────────────────────────────────────────── -->
+    <div class="post-cta">
+      <h3>Get started free</h3>
+      <p>100 KAT Score queries on signup — no credit card required. Wire it in before you need it.</p>
+      <a class="cta-btn" href="https://kaelai.io">kaelai.io →</a>
+    </div>
+
+    <p class="post-follow">
+      Follow <a href="https://x.com/Kaelai_" target="_blank" rel="noopener">@Kaelai_</a> on X for updates on the Known Agent Trust Score API, new chain integrations, and case studies from the agentic economy.
+    </p>
+
+  </div>
+</main>
+
+<!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">
+      Kael &copy; 2026 &mdash;
+      hello@kaelai.io &mdash;
+      <a href="/contact">Contact</a> &mdash;
+      <a href="/docs">Docs</a> &mdash;
+      <a href="/blog">Blog</a> &mdash;
+      <a href="/billing">Billing</a> &mdash;
+      <a href="https://github.com/Kaelai-io" target="_blank" rel="noopener">GitHub</a> &mdash;
+      <a href="https://x.com/Kaelai_" target="_blank" rel="noopener">X / Twitter</a> &mdash;
+      <a href="mailto:hello@kaelai.io?subject=Bug%20Report%20%E2%80%94%20Kael%20Beta&body=Page%3A%20%0ADescription%3A%20%0AExpected%3A%20%0AActual%3A%20">Report a bug</a>
+    </div>
+    <div class="footer-tag">Built for the agent economy</div>
+  </div>
+</footer>
+
+<!-- ── Floating bug button ───────────────────────────────────────────────── -->
+<a href="mailto:hello@kaelai.io?subject=Bug%20Report%20%E2%80%94%20Kael%20Beta&body=Page%3A%20%0ADescription%3A%20%0AExpected%3A%20%0AActual%3A%20" id="bug-float" style="
+  position:fixed;
+  bottom:24px;
+  right:24px;
+  background:#080b0d;
+  border:1px solid rgba(0,200,150,0.30);
+  border-radius:8px;
+  padding:10px 16px;
+  font-family:'JetBrains Mono','Courier New',monospace;
+  font-size:11px;
+  color:rgba(0,200,150,0.60);
+  text-decoration:none;
+  z-index:1000;
+  transition:border-color 0.2s,color 0.2s;
+  line-height:1;
+" onmouseover="this.style.borderColor='rgba(0,200,150,0.70)';this.style.color='rgba(0,200,150,0.90)'"
+   onmouseout="this.style.borderColor='rgba(0,200,150,0.30)';this.style.color='rgba(0,200,150,0.60)'"
+>🐛 Report a bug</a>
+<style>
+  @media (max-width: 640px) {
+    #bug-float { bottom:16px !important; right:16px !important; padding:8px 12px !important; font-size:10px !important; }
+  }
+</style>
+
+</body>
+</html>

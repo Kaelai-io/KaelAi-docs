@@ -17,6 +17,7 @@
       <a href="/agent">Agent</a>
       <a href="/shield">Shield</a>
       <a href="/docs">Docs</a>
+      <a href="/blog">Blog</a>
       <a href="/pricing" class="active">Pricing</a>
     </div>
     <a href="/agent" class="btn btn-primary btn-sm nav-cta">Get API Key</a>
@@ -28,6 +29,7 @@
     <a href="/agent">Agent</a>
     <a href="/shield">Shield</a>
     <a href="/docs">Docs</a>
+    <a href="/blog">Blog</a>
     <a href="/pricing">Pricing</a>
     <a href="/agent" class="btn btn-primary">Get API Key</a>
   </div>
@@ -52,6 +54,19 @@
         <h2 style="margin: 0;">KaelAi Agent</h2>
       </div>
       <p>Wallet trust scoring for x402, Bittensor, and the emerging agent economy.</p>
+    </div>
+
+    <!-- Agent billing frequency toggle -->
+    <div class="pricing-toggles">
+      <div class="pricing-toggle-group" id="pa-freq-toggle">
+        <button class="pricing-toggle-btn active" onclick="setPaFreq('monthly',this)">Monthly</button>
+        <button class="pricing-toggle-btn" onclick="setPaFreq('annual',this)">Annual <span class="toggle-save-label">Save up to 20%</span></button>
+      </div>
+    </div>
+
+    <!-- Agent founding slots notice -->
+    <div id="pa-slots-closed" class="info-box" style="display:none; margin-bottom:24px; max-width:640px; margin-left:auto; margin-right:auto; text-align:center;">
+      Founding rates - limited slots remaining.
     </div>
 
     <div class="pricing-grid-4">
@@ -94,11 +109,14 @@
 
       <!-- Builder -->
       <div class="pricing-card featured">
-        <div class="pricing-badge">Founding Member Rate</div>
+        <div class="pricing-badge pa-founding-badge">Founding Member Rate</div>
+        <div class="pricing-badge pa-standard-badge" style="display:none; background: var(--border-2); color: var(--text-2);">Standard Rate</div>
         <div>
           <div class="pricing-name">Builder</div>
-          <div class="pricing-price"><sup>$</sup>24.99</div>
-          <div class="pricing-per">per month · founding rate</div>
+          <div class="pricing-price"><sup>$</sup><span id="pa-ab-price">24.99</span></div>
+          <div class="pricing-standard-rate" id="pa-ab-standard-cross">$29.99 standard</div>
+          <div class="pricing-per" id="pa-ab-per">per month · founding rate</div>
+          <div class="pricing-per" id="pa-ab-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
           <li class="pricing-feature">3,000 queries / month</li>
@@ -108,28 +126,43 @@
           <li class="pricing-feature">Priority email support</li>
           <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
-        <div class="pricing-founder-note">Founding rate - limited slots remaining</div>
-        <a href="/signup" class="btn btn-primary">Subscribe</a>
+        <div class="pricing-founder-note pa-founding-note">Founding rate - limited slots remaining</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TIYc7B8cESR1et9VXGSq5BC&plan=Builder"
+           class="btn btn-primary" id="pa-ab-btn"
+           data-founding-monthly="price_1TIYc7B8cESR1et9VXGSq5BC"
+           data-founding-annual="price_1TItvSB8cESR1et9PsM1GQzR"
+           data-standard-monthly="price_1TItywB8cESR1et9yaUB4Xxx"
+           data-standard-annual="price_1TItzpB8cESR1et9B0TxQ8qB"
+           data-plan="Builder">Subscribe</a>
       </div>
 
       <!-- Scale -->
       <div class="pricing-card">
-        <div class="pricing-badge" style="background: var(--green-dim);">Founding Member Rate</div>
+        <div class="pricing-badge pa-founding-badge" style="background: var(--green-dim);">Founding Member Rate</div>
+        <div class="pricing-badge pa-standard-badge" style="display:none; background: var(--border-2); color: var(--text-2);">Standard Rate</div>
         <div>
           <div class="pricing-name">Scale</div>
-          <div class="pricing-price"><sup>$</sup>129.99</div>
-          <div class="pricing-per">per month · founding rate</div>
+          <div class="pricing-price"><sup>$</sup><span id="pa-as-price">129.99</span></div>
+          <div class="pricing-standard-rate" id="pa-as-standard-cross">$149 standard</div>
+          <div class="pricing-per" id="pa-as-per">per month · founding rate</div>
+          <div class="pricing-per" id="pa-as-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
-          <li class="pricing-feature">20,000 queries / month</li>
+          <li class="pricing-feature">15,000 queries / month</li>
           <li class="pricing-feature">$0.006 / query overage</li>
           <li class="pricing-feature">All 10 chains</li>
           <li class="pricing-feature">Full API access</li>
           <li class="pricing-feature">Priority support + SLA</li>
           <li class="pricing-feature">Rate locked for life while subscribed</li>
         </ul>
-        <div class="pricing-founder-note">Founding rate - limited slots remaining</div>
-        <a href="/signup" class="btn btn-primary">Subscribe</a>
+        <div class="pricing-founder-note pa-founding-note">Founding rate - limited slots remaining</div>
+        <a href="/api/v1/billing/checkout?price_id=price_1TItwZB8cESR1et9emW3a19n&plan=Scale"
+           class="btn btn-primary" id="pa-as-btn"
+           data-founding-monthly="price_1TItwZB8cESR1et9emW3a19n"
+           data-founding-annual="price_1TItxwB8cESR1et9i0HKem5c"
+           data-standard-monthly="price_1TIu1FB8cESR1et9N7dCwzPg"
+           data-standard-annual="price_1TIu98B8cESR1et9fig51yEU"
+           data-plan="Scale">Subscribe</a>
       </div>
 
     </div>
@@ -157,7 +190,7 @@
 
     <!-- Slots-closed notice -->
     <div id="psp-slots-closed" class="info-box" style="display:none; margin-bottom:24px; max-width:680px; margin-left:auto; margin-right:auto; text-align:center;">
-      Founding member slots are now full. Standard rates apply to new subscriptions.
+      Founding rates - limited slots remaining.
     </div>
 
     <div class="pricing-grid-4">
@@ -194,7 +227,7 @@
           <div class="pricing-savings" id="pss-savings">Save 50% vs PAYG from your first query</div>
         </div>
         <ul class="pricing-features">
-          <li class="pricing-feature">1,000 queries / month included</li>
+          <li class="pricing-feature">2,000 queries / month included</li>
           <li class="pricing-feature">Exploit registry access</li>
           <li class="pricing-feature">Trusted registry access</li>
           <li class="pricing-feature">Email alerts on BLOCK / FLAG</li>
@@ -203,7 +236,7 @@
         </ul>
         <div class="pricing-founder-note psp-founding-note">Founding rate - limited slots remaining</div>
         <a href="/api/v1/billing/checkout?price_id=price_1TZXvqB8cESR1et9eTGWPHel&plan=Shield+Starter"
-           class="btn btn-primary" id="pss-btn"
+           class="btn btn-shield" id="pss-btn"
            data-founding-monthly="price_1TZXvqB8cESR1et9eTGWPHel"
            data-founding-annual="price_1TZXx7B8cESR1et9XQGuJK8Y"
            data-standard-monthly="price_1TZZFQB8cESR1et94i7707Mk"
@@ -233,7 +266,7 @@
         </ul>
         <div class="pricing-founder-note psp-founding-note">Founding rate - limited slots remaining</div>
         <a href="/api/v1/billing/checkout?price_id=price_1TZY1rB8cESR1et95Ttxf5JO&plan=Shield+Pro"
-           class="btn btn-primary" id="psp-btn"
+           class="btn btn-shield" id="psp-btn"
            data-founding-monthly="price_1TZY1rB8cESR1et95Ttxf5JO"
            data-founding-annual="price_1TZYnLB8cESR1et9GRgK0NKC"
            data-standard-monthly="price_1TZY2MB8cESR1et91t9hVgW5"
@@ -250,7 +283,7 @@
           <div class="pricing-per" id="pse-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
-          <li class="pricing-feature">100,000 queries / month included</li>
+          <li class="pricing-feature">Unlimited queries / month included</li>
           <li class="pricing-feature">Exploit + trusted registry access</li>
           <li class="pricing-feature">Webhook + Telegram + Slack alerts</li>
           <li class="pricing-feature">Dedicated support</li>
@@ -258,7 +291,7 @@
           <li class="pricing-feature">Custom alert thresholds</li>
         </ul>
         <a href="/api/v1/billing/checkout?price_id=price_1TZY3oB8cESR1et9cMFhGVJh&plan=Shield+Enterprise"
-           class="btn btn-primary" id="pse-btn"
+           class="btn btn-shield" id="pse-btn"
            data-standard-monthly="price_1TZY3oB8cESR1et9cMFhGVJh"
            data-standard-annual="price_1TZY4GB8cESR1et91PxFJVZJ"
            data-plan="Shield+Enterprise">Subscribe</a>
@@ -369,7 +402,7 @@ function setPspFreq(freq, btn) {
     <div class="faq-list" style="margin: 0 auto;">
       <div class="faq-item">
         <h4>Can I use both products on one API key?</h4>
-        <p>Yes, both Agent and Shield queries are billed to the same API key. Shield queries always include the $0.05 Shield PAYG charge on top of your base tier rate. Your monthly query allowance counts toward both Agent and Shield queries.</p>
+        <p>Yes, both Agent and Shield queries are billed to the same API key. Shield subscription tiers (Starter, Pro, Enterprise) include their monthly query allowance at no additional per-query charge — your subscription covers the queries up to your plan limit. Overage queries beyond your monthly allowance are billed at your plan's overage rate. The $0.05/query PAYG rate applies only to users without a Shield subscription, not to subscribers. Your monthly query allowance counts toward both Agent and Shield queries.</p>
       </div>
       <div class="faq-item">
         <h4>What is a founding member rate?</h4>
@@ -411,6 +444,7 @@ function setPspFreq(freq, btn) {
       <a href="/agent">Agent</a>
       <a href="/shield">Shield</a>
       <a href="/docs">Docs</a>
+      <a href="/blog">Blog</a>
       <a href="/pricing">Pricing</a>
     </nav>
   </div>
@@ -426,6 +460,88 @@ function setPspFreq(freq, btn) {
   hamburger.addEventListener('click', () => {
     mobileNav.classList.toggle('open');
   });
+</script>
+
+<script>
+// ── Agent pricing toggle (pricing page) ─────────────────────────────────────
+
+const PA_DATA = {
+  builder: {
+    foundingMonthly:  { price: '24.99',  standard: '$29.99 standard', per: 'per month · founding rate',     annualNote: '' },
+    foundingAnnual:   { price: '19.99',  standard: '$24.99 standard', per: 'per month - billed annually',   annualNote: 'Billed as $239.88/year — save $60' },
+    standardMonthly:  { price: '29.99',  standard: '',                per: 'per month',                     annualNote: '' },
+    standardAnnual:   { price: '24.99',  standard: '',                per: 'per month - billed annually',   annualNote: 'Billed as $299.88/year' },
+  },
+  scale: {
+    foundingMonthly:  { price: '129.99', standard: '$149 standard',   per: 'per month · founding rate',     annualNote: '' },
+    foundingAnnual:   { price: '109.99', standard: '$124.99 standard',per: 'per month - billed annually',   annualNote: 'Billed as $1,319.88/year — save $240' },
+    standardMonthly:  { price: '149',    standard: '',                per: 'per month',                     annualNote: '' },
+    standardAnnual:   { price: '124.99', standard: '',                per: 'per month - billed annually',   annualNote: 'Billed as $1,499.88/year' },
+  },
+};
+
+let paFreq     = 'monthly';
+let paFounding = true;
+
+function updatePaAgent() {
+  const isF = paFounding;
+  const freq = paFreq;
+  const g = id => document.getElementById(id);
+
+  document.querySelectorAll('.pa-founding-badge').forEach(el => el.style.display = isF ? '' : 'none');
+  document.querySelectorAll('.pa-standard-badge').forEach(el => el.style.display  = isF ? 'none' : '');
+  document.querySelectorAll('.pa-founding-note').forEach(el  => el.style.display  = isF ? '' : 'none');
+  if (g('pa-slots-closed')) g('pa-slots-closed').style.display = isF ? 'none' : '';
+
+  function applyCard(ids, data, founding, freq) {
+    const key = (founding && data[founding + (freq === 'monthly' ? 'Monthly' : 'Annual')])
+      ? founding + (freq === 'monthly' ? 'Monthly' : 'Annual')
+      : 'standard' + (freq === 'monthly' ? 'Monthly' : 'Annual');
+    const d = data[key];
+    if (!d) return;
+    if (g(ids.price)) g(ids.price).textContent = d.price;
+    if (ids.std && g(ids.std)) {
+      g(ids.std).textContent   = d.standard;
+      g(ids.std).style.display = d.standard ? '' : 'none';
+    }
+    if (g(ids.per)) g(ids.per).textContent = d.per;
+    if (ids.note && g(ids.note)) {
+      g(ids.note).textContent   = d.annualNote;
+      g(ids.note).style.display = d.annualNote ? '' : 'none';
+    }
+    const btn = g(ids.btn);
+    if (btn) {
+      const pid = paFounding
+        ? (btn.getAttribute('data-founding-' + freq) || btn.getAttribute('data-standard-' + freq))
+        : btn.getAttribute('data-standard-' + freq);
+      if (pid) btn.href = '/api/v1/billing/checkout?price_id=' + pid + '&plan=' + encodeURIComponent(btn.dataset.plan);
+    }
+  }
+
+  applyCard({ price: 'pa-ab-price', std: 'pa-ab-standard-cross', per: 'pa-ab-per', note: 'pa-ab-annual-note', btn: 'pa-ab-btn' },
+            PA_DATA.builder, isF ? 'founding' : 'standard', freq);
+  applyCard({ price: 'pa-as-price', std: 'pa-as-standard-cross', per: 'pa-as-per', note: 'pa-as-annual-note', btn: 'pa-as-btn' },
+            PA_DATA.scale,   isF ? 'founding' : 'standard', freq);
+}
+
+function setPaFreq(freq, btn) {
+  paFreq = freq;
+  document.querySelectorAll('#pa-freq-toggle .pricing-toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePaAgent();
+}
+
+// Live founding slot check
+(async function() {
+  try {
+    const res  = await fetch('/api/v1/billing/agent-slots');
+    const data = await res.json();
+    paFounding = data.founding_period_active;
+    updatePaAgent();
+  } catch(e) {
+    updatePaAgent(); // default to founding on error
+  }
+})();
 </script>
 
 </body>

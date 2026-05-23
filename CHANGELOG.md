@@ -4,6 +4,163 @@ All notable changes to the KAT Score API are documented here.
 
 ---
 
+## v0.3.1 — Shield TC Detection Hardening
+**Released: 2026-05-22**
+
+### Overview
+
+Patch release improving Tornado Cash detection coverage in Shield mode.
+Two blind spots in the counterparty address pipeline are closed (internal txs,
+ERC-20 transfer senders), three missing TC contracts are added to the ETH registry,
+and a confirmed single-hop limitation from the Verus Bridge case study is documented
+as a Phase 2 design item.
+
+---
+
+### What Changed
+
+#### Fix 1 — Internal transaction sources now included in TC scan (Shield mode, EVM only)
+
+**Root cause:** The scoring engine fetched only normal transactions via Moralis
+`/{address}`. Internal transactions (sub-call traces) were never fetched. TC pool
+withdrawals routed through intermediate contracts arrive exclusively as internal
+calls — entirely invisible to the previous TC scanner.
+
+**Fix:** Added `get_wallet_internal_transactions()` to `services/moralis.py`.
+On every fresh Shield query against an EVM chain, internal txs are fetched via
+Etherscan v2 `txlistinternal`, all `from_address` values are merged into the
+counterparty set, and the augmented set is checked against `tornado_cash_contracts`.
+
+New fields added to `behavioral_features` JSONB for transparency:
+- `internal_tx_sources` — list of unique internal tx `from_address` values
+- `erc20_transfer_senders` — list of unique ERC-20 transfer `from_address` values
+
+Performance: Both fetches run concurrently via `asyncio.gather`. Graceful
+degradation — Shield scoring continues normally if either fetch fails.
+Applies only in Shield mode; Agent scoring is unaffected.
+
+**Files changed:** `services/moralis.py`, `api/v1/endpoints/score.py`
+
+#### Fix 2 — ERC-20 transfer senders now included in TC scan (Shield mode, EVM only)
+
+**Root cause:** `get_wallet_erc20_transfers()` was already available in
+`services/moralis.py` but its `from_address` values were never merged into
+`all_counterparty_addresses` before the TC check. TC USDC/DAI/cDAI pools
+deliver funds exclusively via ERC-20 Transfer events (not raw ETH sends) —
+these were entirely missed.
+
+**Fix:** Shield post-processing in `api/v1/endpoints/score.py` now fetches
+ERC-20 transfers (limit=50) concurrently alongside internal txs, merges all
+`from_address` values into the counterparty set, and stores them in
+`erc20_transfer_senders` within `behavioral_features`.
+
+**Files changed:** `api/v1/endpoints/score.py`
+
+#### Fix 3 — Three missing TC contracts added to ETH registry
+
+**Audit finding:** The original `tornado_cash_contracts` table was seeded from
+the OFAC SDN list (August 8 2022) plus two Etherscan-labeled entries (router,
+nova). Three confirmed TC contracts deployed before the OFAC list were missing:
+
+| Address | Contract Name | Type | Source | needs_review |
+|---|---|---|---|---|
+| `0x94a1b5cdb22c43faab4abeb5c74999895464ddaf` | Mixer | pool | etherscan_source — deployed by known TC proxy | false |
+| `0x905b63fff465b9ffbf41dea908ceb12478ec7601` | TornadoProxy | proxy | etherscan_source — pre-OFAC SDN deployment | false |
+| `0x5efda50f22d34f262c29268506c5fa42cb56a1ce` | LoopbackProxy | proxy | etherscan_source — TC governance infrastructure | true |
+
+ETH table now contains **26 entries** (23 verified, 3 needs_review).
+
+TC Redis cache invalidated after update. New contracts active immediately on
+next Shield query (cache miss or force_refresh).
+
+**Entries with existing `needs_review=true` (pre-existing, not changed):**
+- `0xaeb0a1a9c4c9f7f3e8c5f3bdc7a2a5c9a4c4b65a` (1000 USDT pool) — verify on BscScan
+- `0x80c7f18fde57c8d0eeafc0e65d7a27e8a00c0e7c` (5000 USDT pool) — verify on BscScan
+
+**Files changed:** `tornado_cash_contracts` table (DB), Redis TC cache invalidated
+
+---
+
+### Verus Bridge Case Study — Detection Limit Documented
+
+**Incident:** Verus-Ethereum Bridge exploit (2026-05-18, $11.4M)
+- Wallet 1: `0x65Cb8b128Bf6e690761044CCECA422bb239C25F9`
+- Wallet 2: `0x5aBb91B9c01A5Ed3aE762d32B236595B459D5777`
+
+**Finding:** Even with Fixes 1 and 2 applied, `tornado_cash_funded` did not fire
+for either wallet. Root cause: the TC funding is **two hops back** from these wallets.
+
+Confirmed funding chain:
+```
+TC Pool → [unknown upstream actor] → Wallet 2 → Verus Bridge (0x71518580) → Wallet 1
+```
+
+Fixes 1 and 2 close the single-hop gap: they would detect TC if `0x71518580`
+(the Verus Bridge) or `0x00000011f84b9aa48e5f8aa8b9897600006289be` (Uniswap
+V2DutchOrderReactor) were TC contracts. They are not — the TC interaction
+happened upstream of Wallet 2, not directly visible from Wallet 1's transaction
+history at any depth reachable via Etherscan internal tx scan.
+
+**For this case specifically:** Both wallets are correctly BLOCKED via the exploit
+registry (manually tagged with `funding_source = 'Tornado Cash'` from PeckShield
+intelligence). The registry path is working as designed and is the correct control
+for confirmed attacker wallets.
+
+**Limitation confirmed:** Single-hop TC detection (Fixes 1 + 2) cannot catch
+multi-hop laundering chains without recursive chain traversal. Documented below
+as a Phase 2 design item.
+
+---
+
+### Phase 2 Addition: Multi-Hop TC Detection
+
+**Priority: Medium | Status: Backlog | Complexity: High**
+
+Detect TC funding that is two or more hops removed from the scored wallet.
+
+**Problem this solves:** Sophisticated attacker wallets route TC withdrawals
+through one or more intermediary addresses before reaching the exploit wallet.
+Single-hop detection (Fixes 1 + 2) sees only direct TC contract interactions.
+A wallet funded TC → intermediary → target will not trigger the flag even with
+all inbound addresses checked, unless the intermediary itself is a TC contract.
+
+**Confirmed case:** Verus Bridge exploit — TC funded an upstream actor who then
+triggered the bridge exploit, funnelling proceeds to the attacker wallets through
+the bridge contract. Single-hop detection cannot reach the TC interaction.
+
+**Proposed approach:**
+
+Option A — Recursive internal tx traversal (1 additional hop):
+- For each `internal_tx_source` address captured in Fix 1, check whether *that*
+  address has any direct TC interactions in its own transaction history
+- Adds 1 Etherscan API call per unique internal tx source (potentially 3–15 calls)
+- Captures the Verus Bridge pattern (TC → Wallet 2 → Bridge → Wallet 1)
+- Cache intermediate-hop results in Redis (TTL 24h) to avoid redundant lookups
+
+Option B — TC withdrawal address registry:
+- Maintain a `tc_withdrawal_addresses` table of known TC withdrawal destination
+  addresses (addresses that previously received a confirmed TC withdrawal)
+- Populated via off-chain indexing of TC deposit/withdrawal event logs
+- Check inbound `from_address` values against this table instead of recursing
+- Higher precision but requires ongoing maintenance of withdrawal address set
+- Lower latency than live recursive traversal
+
+**False positive risk:** Multi-hop detection increases false positive rate.
+An address that received funds from an address that received funds from TC is
+not necessarily TC-funded — intermediaries may be legitimate exchange hot wallets,
+bridge contracts, or other high-flow addresses. Must apply confidence decay per hop:
+- Direct TC contact: confidence 0.99
+- 1 hop removed: confidence 0.70 (flag with lower confidence, no auto-BLOCK)
+- 2 hops removed: confidence 0.40 (informational only, separate sub-flag)
+
+**Recommendation:** Implement Option A (recursive 1-hop) first with a separate
+`tornado_cash_indirect` flag (distinct from `tornado_cash_funded`). Gate
+auto-escalation on confidence ≥ 0.70. Phase 2 design review required before
+implementation — false positive rate must be validated against known-clean wallets
+before production deployment.
+
+---
+
 ## v0.3.0 — KaelAi Shield Phase 1 ✅ COMPLETE
 **Released: 2026-05-21**
 

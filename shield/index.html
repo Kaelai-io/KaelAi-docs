@@ -17,6 +17,7 @@
       <a href="/agent">Agent</a>
       <a href="/shield" class="active">Shield</a>
       <a href="/docs">Docs</a>
+      <a href="/blog">Blog</a>
       <a href="/pricing">Pricing</a>
     </div>
     <a href="/agent" class="btn btn-primary btn-sm nav-cta">Get API Key</a>
@@ -28,6 +29,7 @@
     <a href="/agent">Agent</a>
     <a href="/shield">Shield</a>
     <a href="/docs">Docs</a>
+    <a href="/blog">Blog</a>
     <a href="/pricing">Pricing</a>
     <a href="/agent" class="btn btn-primary">Get API Key</a>
   </div>
@@ -248,7 +250,7 @@
   -H <span class="str">"Authorization: Bearer YOUR_API_KEY"</span> \
   -H <span class="str">"Content-Type: application/json"</span> \
   -d <span class="str">'{
-    "wallet_address": "0xAttackerWalletAddress",
+    "wallet_address": "0x6bcb37488dbe2b5d917e80586c544cb9174a1d6d",
     "chain": "eth",
     "mode": "shield"
   }'</span></pre>
@@ -309,7 +311,7 @@
 
     <!-- Founding slots notice (hidden by default, shown when slots = 0) -->
     <div id="shield-slots-closed" class="info-box" style="display:none; margin-bottom:24px; max-width:640px; margin-left:auto; margin-right:auto; text-align:center;">
-      Founding member slots are now full. Standard rates apply to new subscriptions.
+      Founding rates - limited slots remaining.
     </div>
 
     <div class="pricing-grid-4">
@@ -345,7 +347,7 @@
           <div class="pricing-savings" id="ss-savings">Save 50% vs PAYG from your first query</div>
         </div>
         <ul class="pricing-features">
-          <li class="pricing-feature">1,000 queries / month included</li>
+          <li class="pricing-feature">2,000 queries / month included</li>
           <li class="pricing-feature">Registry access - exploit + trusted</li>
           <li class="pricing-feature">Email alerts on BLOCK / FLAG</li>
           <li class="pricing-feature">Full 5-tier threat analysis</li>
@@ -354,7 +356,7 @@
         </ul>
         <div class="pricing-founder-note shield-founding-note">Founding rate - locked while subscribed</div>
         <a href="/api/v1/billing/checkout?price_id=price_1TZXvqB8cESR1et9eTGWPHel&plan=Shield+Starter"
-           class="btn btn-primary" id="ss-btn"
+           class="btn btn-shield" id="ss-btn"
            data-founding-monthly="price_1TZXvqB8cESR1et9eTGWPHel"
            data-founding-annual="price_1TZXx7B8cESR1et9XQGuJK8Y"
            data-standard-monthly="price_1TZZFQB8cESR1et94i7707Mk"
@@ -384,7 +386,7 @@
         </ul>
         <div class="pricing-founder-note shield-founding-note">Founding rate - locked while subscribed</div>
         <a href="/api/v1/billing/checkout?price_id=price_1TZY1rB8cESR1et95Ttxf5JO&plan=Shield+Pro"
-           class="btn btn-primary" id="sp-btn"
+           class="btn btn-shield" id="sp-btn"
            data-founding-monthly="price_1TZY1rB8cESR1et95Ttxf5JO"
            data-founding-annual="price_1TZYnLB8cESR1et9GRgK0NKC"
            data-standard-monthly="price_1TZY2MB8cESR1et91t9hVgW5"
@@ -401,7 +403,7 @@
           <div class="pricing-per" id="se-annual-note" style="display:none; font-size:0.75rem; color:var(--green); margin-top:2px;"></div>
         </div>
         <ul class="pricing-features">
-          <li class="pricing-feature">100,000 queries / month included</li>
+          <li class="pricing-feature">Unlimited queries / month included</li>
           <li class="pricing-feature">Registry access - exploit + trusted</li>
           <li class="pricing-feature">Webhook + Telegram + Slack alerts</li>
           <li class="pricing-feature">Dedicated support</li>
@@ -409,7 +411,7 @@
           <li class="pricing-feature">Custom alert thresholds</li>
         </ul>
         <a href="/api/v1/billing/checkout?price_id=price_1TZY3oB8cESR1et9cMFhGVJh&plan=Shield+Enterprise"
-           class="btn btn-primary" id="se-btn"
+           class="btn btn-shield" id="se-btn"
            data-standard-monthly="price_1TZY3oB8cESR1et9cMFhGVJh"
            data-standard-annual="price_1TZY4GB8cESR1et91PxFJVZJ"
            data-plan="Shield+Enterprise">Subscribe</a>
@@ -566,6 +568,7 @@ function setShieldFreq(freq, btn) {
       <a href="/agent">Agent</a>
       <a href="/shield">Shield</a>
       <a href="/docs">Docs</a>
+      <a href="/blog">Blog</a>
       <a href="/pricing">Pricing</a>
     </nav>
   </div>
