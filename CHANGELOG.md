@@ -128,6 +128,37 @@ of what the base scorer returns.
 
 ---
 
+#### Fix 5 — Trailing agent language in type_note removed from Shield mode reasoning
+
+**Root cause:** `_classify_wallet_type()` in `scorer.py` returns a `(wallet_type, type_note)`
+tuple. For `likely_exchange` wallets (and others), `type_note` contained agent-specific
+language: *"KAT Score is optimised for autonomous agent wallets — exchange wallets are
+expected to score differently."* This string was appended to the LLM-generated reasoning
+before Shield post-processing ran, meaning it appeared verbatim in Shield mode responses
+despite Fix 4 cleaning up all other agent language.
+
+**Fix:** Added `_SHIELD_TYPE_NOTES` dict to `scorer.py` mapping each `wallet_type` to a
+DeFi-appropriate replacement string. In `compute_kat_score()`, when `mode == "shield"`,
+`type_note` is overridden with the Shield version before it is appended to reasoning:
+
+```python
+if mode == "shield" and type_note is not None:
+    type_note = _SHIELD_TYPE_NOTES.get(wallet_type, type_note)
+```
+
+Replacement string for `likely_exchange` (and `retail_wallet`):
+> *"KaelAi Shield is optimised for DeFi protocol security screening — results reflect
+> on-chain behavioral patterns relevant to DeFi risk assessment."*
+
+**Confirmed:** SOL wallet `5bi727G5HTtSWGzE5z4LCzWRHXvtbf1BdmdoecUfT6ww` rescored —
+agent language strings (`autonomous agent`, `agent commerce`, `agent wallet`,
+`KAT Score is optimised for autonomous agent wallets`) confirmed absent from all
+Shield mode response fields.
+
+**Files changed:** `services/scorer.py`
+
+---
+
 ### Live Tier Confirmation (v0.3.2)
 
 Rescored against the same three personal investor wallets used in pre-fix testing:
