@@ -637,6 +637,128 @@ not as defaults. This is the right design for a DeFi security product.
 
 ## Phase 2 — Priorities
 
+### 0. Registry Integrity Monitoring — Trusted Registry Behavioral Re-evaluation
+**Priority: PRIORITY | Status: Backlog | Complexity: Medium**
+
+#### Problem
+
+The current trusted registry is a static allowlist — once a wallet is added with
+`registry_type = trusted`, it receives a permanent ALLOW override at 0.99 confidence
+regardless of any future behavioral change. This creates a reputation poisoning attack
+vector: a wallet could accumulate legitimate history, gain trusted status, then pivot
+to malicious behaviour with no automatic detection. High-value targets (exchange hot
+wallets, bridge contracts, protocol treasuries) are particularly exposed.
+
+#### Design: Three-tier trusted registry
+
+Replace the single `registry_type = trusted` value with a three-tier system:
+
+| Tier | Label | Who it covers | Re-evaluation |
+|---|---|---|---|
+| **Tier 1** | `trusted_permanent` | Immutable public entities: Vitalik, Ethereum Foundation, OFAC-cleared foundations | Never — identity is fixed |
+| **Tier 2** | `trusted_monitored` | Potentially compromisable entities: exchange hot wallets, bridge contracts, protocol treasuries, DAO multisigs | Weekly or monthly background rescore |
+| **Tier 3** | `trusted_provisional` | Newly added entities (first 30 days) | Daily rescore; behavioral scoring runs alongside registry override during probation |
+
+**Migration:** All existing `trusted` entries default to `Tier 2 (monitored)` on
+migration. Vitalik, Ethereum Foundation, and other immutable public-figure entries
+are manually promoted to `Tier 1 (permanent)` post-migration.
+
+#### Implementation: Nightly Celery rescore task
+
+A nightly Celery task (`tasks/registry_monitor.py`) rescores all Tier 2 and Tier 3
+trusted registry entries in Shield mode internally:
+
+- **Bypasses the public API endpoint entirely** — no user tokens consumed, no billing
+  credits deducted. Calls the internal scoring pipeline (`compute_kat_score` +
+  `build_shield_result`) directly, the same path used by real-time contract monitoring.
+- Only Moralis and Helius data provider API calls are made (standard chain data fetch).
+- Results are stored in a new `registry_monitor_log` table (not `kat_scores`) to keep
+  internal monitoring separate from user-facing score history.
+- Uses the existing Celery infrastructure (`workers/celery_app.py`) shared with the
+  monthly billing task.
+
+**Trigger conditions for automatic status change (Tier 2 + Tier 3):**
+
+Any of the following fires an automatic `trusted → flagged` status change and sends a
+Telegram alert for manual review before trusted status can be restored:
+
+| Signal | Threshold |
+|---|---|
+| Behavioral score drop | Shield score falls below 30 on rescore |
+| Critical flag fires | `tornado_cash_funded` detected in counterparty set |
+| Protocol engagement collapse | `zero_known_protocol_ratio` fires after ≥ 3 prior clean rescores |
+| Inbound pattern shift | `receive_only_pattern` fires after ≥ 2 prior clean rescores |
+| Value spike anomaly | `value_spike_anomaly` fires after ≥ 3 prior stable rescores |
+| Counterparty concentration spike | `counterparty_concentration` fires with confidence > 0.80 after prior clean rescores |
+
+**Alert format (Telegram):**
+```
+🚨 TRUSTED REGISTRY ALERT
+Wallet: 0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503
+Entity: Binance Hot Wallet (Tier 2 — monitored)
+Status change: trusted_monitored → flagged
+Trigger: tornado_cash_funded (confidence 0.90)
+Previous score: 76 | New score: 12
+Action required: Manual review before trusted status restored
+```
+
+**Important:** While a Tier 2 wallet is in `flagged` status, it no longer receives
+the ALLOW registry override. It falls through to normal behavioral scoring — meaning
+it will score on its merits and may receive BLOCK, FLAG, or REVIEW depending on the
+behavioral data. This is intentional and correct.
+
+#### Tier 3 probation behaviour
+
+During the 30-day probation period, Tier 3 entries receive the registry ALLOW override
+as normal (consistent user experience) but the internal daily rescore runs in parallel.
+If any trigger condition fires during probation, the entry is immediately demoted to
+`flagged` without ever completing the probation period. After 30 clean daily rescores
+with no trigger conditions, the entry is automatically promoted to Tier 2.
+
+#### Schema changes required
+
+```sql
+-- extend registry_type enum
+ALTER TYPE registry_type ADD VALUE 'trusted_permanent';
+ALTER TYPE registry_type ADD VALUE 'trusted_monitored';
+ALTER TYPE registry_type ADD VALUE 'trusted_provisional';
+ALTER TYPE registry_type ADD VALUE 'flagged';
+
+-- new monitoring log table
+CREATE TABLE registry_monitor_log (
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    registry_id   UUID REFERENCES exploit_registry(id),
+    scored_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    shield_score  INTEGER,
+    shield_flags  JSONB,
+    trigger_fired BOOLEAN DEFAULT FALSE,
+    trigger_reason TEXT,
+    prior_status  VARCHAR(40),
+    new_status    VARCHAR(40)
+);
+```
+
+#### Files to create / modify
+
+| File | Change |
+|---|---|
+| `app/tasks/registry_monitor.py` | New — nightly Celery task |
+| `app/models/exploit_registry.py` | Add new `registry_type` enum values + `flagged` status |
+| `app/services/exploit_registry.py` | Update `lookup_registry()` to handle new tiers; add `flag_trusted_entry()` |
+| `app/services/telegram.py` | Add `alert_trusted_registry_flag()` |
+| `app/workers/celery_app.py` | Register nightly beat schedule for registry monitor task |
+| `alembic/` | Migration for new enum values + `registry_monitor_log` table |
+
+#### Note on billing / token usage
+
+Internal Celery rescoring does **not** consume API tokens or billing credits.
+The nightly task calls `compute_kat_score()` and `build_shield_result()` directly —
+bypassing `charge_shield_query()` and all API key authentication entirely. Moralis
+and Helius API calls are made as normal (these are infrastructure costs, not
+per-user billing). The `registry_monitor_log` insert is the only DB write per rescore.
+
+---
+
 ### 1. Etherscan Entity Label Integration (wallet-level)
 **Priority: High**
 
