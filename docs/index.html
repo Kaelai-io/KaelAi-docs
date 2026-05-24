@@ -64,7 +64,7 @@
           </tr>
           <tr>
             <td>Output</td>
-            <td>KAT Score 0-100, grade, reasoning</td>
+            <td>Wallet Trust Score 0-100, grade, reasoning</td>
             <td>Five-tier action + threat classification</td>
           </tr>
           <tr>
@@ -460,11 +460,6 @@
                 <td>Shield-weighted score 0-100 (TL 30%, BC 25%, CQ 20%, WA 15%, VS 10%)</td>
               </tr>
               <tr>
-                <td><code>agent_score</code></td>
-                <td>integer</td>
-                <td>Original equal-weight score (reference comparison)</td>
-              </tr>
-              <tr>
                 <td><code>grade</code></td>
                 <td>string</td>
                 <td>Bond grade: AAA, AA, A, BBB, BB, B, CCC</td>
@@ -534,7 +529,6 @@
           <pre><span class="op">{</span>
   <span class="kw">"scoring_mode"</span>:          <span class="str">"shield"</span>,
   <span class="kw">"overall_score"</span>:         <span class="num">22</span>,
-  <span class="kw">"agent_score"</span>:           <span class="num">25</span>,
   <span class="kw">"grade"</span>:                 <span class="str">"CCC"</span>,
   <span class="kw">"threat_classification"</span>: <span class="str">"confirmed_exploit_wallet"</span>,
   <span class="kw">"threat_confidence"</span>:     <span class="num">0.99</span>,

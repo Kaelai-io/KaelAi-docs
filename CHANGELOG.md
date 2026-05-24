@@ -18,6 +18,26 @@ an unknown wallet is not the same as a dangerous one. All four fixes are live.
 
 ### What Changed
 
+#### Fix 7 — Shield mode now uses Wallet Trust Score branding throughout
+
+**Applies to:** `services/shield_scorer.py`, `shield/index.html`, `docs/index.html`, `docs/shield-spec.md`
+
+Shield mode API responses and all public Shield documentation now use **Wallet Trust Score** terminology consistently. KAT Score (Known Agent Trust Score) is the Agent mode product identity and is not appropriate in Shield mode, which serves DeFi protocol security teams with no interest in agent commerce.
+
+**Changes made:**
+
+1. **`services/shield_scorer.py`** — Module docstring updated. All `SHIELD_SCOPE_WARNINGS` entries that referenced "KAT Shield Score" or "KAT Shield" updated to "Wallet Trust Score". The `agent_score` field removed from both code paths in `build_shield_result()` — Shield API responses no longer include the equal-weight agent reference score.
+
+2. **`shield/index.html`** — `agent_score` removed from the JSON response example. Page now shows a clean Shield response with no agent-mode fields visible to DeFi protocol customers.
+
+3. **`docs/index.html`** — Mode comparison table: "KAT Score 0-100" updated to "Wallet Trust Score 0-100". Shield response schema table: `agent_score` row removed. JSON response example: `agent_score` field removed.
+
+4. **`docs/shield-spec.md`** — `agent_score` field removed from response fields JSON block and accompanying description paragraph.
+
+**Live confirmation:** Wallet `0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503` rescored post-deploy — response contains no `agent_score` field and no KAT or agent references in any response field value. Wallet Trust Score 76/100, ALLOW.
+
+---
+
 #### Fix 1 — Empty wallet handling: BLOCK → REVIEW with `insufficient_data` classification
 
 **Root cause:** Wallets returning zero transactions were assigned dimension scores

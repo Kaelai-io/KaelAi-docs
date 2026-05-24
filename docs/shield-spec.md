@@ -40,7 +40,6 @@ Content-Type: application/json
   "chain":                     "eth",
   "scoring_mode":              "shield",
   "overall_score":             0–100,
-  "agent_score":               0–100,
   "grade":                     "AAA | AA | A | BBB | BB | B | CCC",
   "threat_classification":     "confirmed_exploit_wallet | mixer_funded | draining_address | suspicious_pattern | low_protocol_engagement | clean | verified_good_actor",
   "threat_confidence":         0.0–1.0,
@@ -67,7 +66,6 @@ Content-Type: application/json
 }
 ```
 
-**`agent_score`** — the equal-weight KAT Score for reference. Shield score differs due to rebalanced dimension weights.
 
 ---
 
