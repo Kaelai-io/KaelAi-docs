@@ -777,9 +777,100 @@ bypassing `charge_shield_query()` and all API key authentication entirely. Moral
 and Helius API calls are made as normal (these are infrastructure costs, not
 per-user billing). The `registry_monitor_log` insert is the only DB write per rescore.
 
+### 1. Automated Threat Intelligence Ingestion Pipeline
+**Priority: PRIORITY | Status: Backlog | Complexity: High**
+
+#### Problem
+
+The KaelAi Shield exploit registry is populated manually — confirmed attacker wallets are only added when a team member reads a security alert and inserts the record by hand. This creates a detection gap between when a threat is publicly known and when the registry protects against it.
+
+The live SquidRouter exploit on 2026-05-24 demonstrated this gap directly: both attacker wallets (`0x9bdc5c3b31ba492fd91cf8900c1bfd9f308d4e38` and `0xa447c9bcb0a0b7a2a88bd68f7c2a59bac25d8817`) were confirmed by Blockaid in a public alert, but scored `insufficient_data / REVIEW` on first query until manually added to the registry. Automated ingestion would have added them within minutes of the alert with no manual intervention.
+
+#### Threat Feed Sources
+
+| Source | Type | Method |
+|---|---|---|
+| Blockaid | Official alerts | Public alert feed or Twitter account monitoring |
+| PeckShield Alert | Twitter/X | RSS or public timeline scraping for wallet address patterns |
+| ZachXBT | Telegram + Twitter/X | Telegram channel monitoring + RSS or public timeline scraping |
+| SlowMist | Security alerts | RSS feed or website scraping |
+| CertiK | Incident reports | RSS feed or website scraping |
+
+#### Implementation
+
+A Celery beat task (`tasks/threat_intel_ingest.py`) running every 15 minutes that:
+
+1. Checks each configured threat feed source for new content published since last poll
+2. Parses alert content for EVM/BTC/SOL wallet addresses matching known exploit alert patterns (regex + LLM-assisted classification for ambiguous cases)
+3. Extracts metadata: incident name, date, role (`attacker` | `consolidation` | `launderer`), amount (USD), source attribution
+4. Inserts matched wallets into `exploit_registry` with `confidence = suspected` (not `confirmed`) and `confirmed_by = <source_name>`
+5. Fires a Telegram alert to Brett for each new registry addition
+
+**Alert format (Telegram):**
+```
+THREAT INTEL INGESTION
+New wallet added to exploit registry
+
+Wallet: 0x9bdc5c3b31ba492fd91cf8900c1bfd9f308d4e38
+Chain: ETH
+Incident: SquidRouter Exploit
+Date: 2026-05-24
+Role: attacker
+Amount: ~$3.07M
+Source: Blockaid
+Confidence: suspected
+
+Review at kaelai.io/admin to promote to confirmed.
+```
+
+#### Confidence Levels
+
+All automated ingestion entries are tagged `confidence = suspected`. Manual promotion to `confirmed` is required after review. This ensures near-real-time protection without compromising registry accuracy — a `suspected` entry still triggers BLOCK at Shield tier, but the alert label surfaces the lower confidence to API consumers.
+
+| Level | Source | Action |
+|---|---|---|
+| `suspected` | Automated ingestion | BLOCK with `suspected_exploit_wallet` classification |
+| `confirmed` | Manual review or Blockaid official confirmation | BLOCK with `confirmed_exploit_wallet` classification |
+
+#### Schema Changes Required
+
+```sql
+ALTER TABLE exploit_registry ADD COLUMN confidence VARCHAR(20) DEFAULT 'confirmed';
+ALTER TABLE exploit_registry ADD COLUMN auto_ingested BOOLEAN DEFAULT FALSE;
+ALTER TABLE exploit_registry ADD COLUMN source_url TEXT;
+CREATE INDEX idx_exploit_registry_confidence ON exploit_registry(confidence);
+```
+
+#### Files to Create / Modify
+
+| File | Change |
+|---|---|
+| `app/tasks/threat_intel_ingest.py` | New — 15-minute Celery beat task |
+| `app/services/threat_feeds.py` | New — per-source feed polling and wallet extraction |
+| `app/services/exploit_registry.py` | Add `ingest_suspected_wallet()` helper |
+| `app/services/shield_scorer.py` | Surface `confidence` level in `registry_match` response block |
+| `app/services/telegram.py` | Add `alert_threat_intel_ingestion()` |
+| `app/workers/celery_app.py` | Register 15-minute beat schedule for ingest task |
+| `alembic/` | Migration for `confidence`, `auto_ingested`, `source_url` columns |
+
+#### Twitter/X Monitoring Approach
+
+For PeckShield, ZachXBT, and Blockaid Twitter sources:
+- Monitor public timelines via RSS (Nitter RSS proxy or equivalent) for new posts containing EVM address patterns (`0x[0-9a-fA-F]{40}`)
+- Filter posts matching known exploit alert keywords: `exploit`, `hack`, `drained`, `attacker`, `stolen`, `bridge attack`, `rug`
+- Extract all wallet addresses from matching posts and queue for registry insertion
+- Include original tweet URL as `source_url` for audit trail
+
+#### ZachXBT Telegram Monitoring
+
+ZachXBT's Telegram channel is publicly accessible. The existing Telegram bot infrastructure can be extended to monitor it:
+- Add the channel to the bot's monitored list
+- Parse new messages for EVM/BTC/SOL wallet addresses + exploit keywords
+- Same extraction and ingestion pipeline as Twitter sources
+
 ---
 
-### 1. Etherscan Entity Label Integration (wallet-level)
+### 2. Etherscan Entity Label Integration (wallet-level)
 **Priority: High**
 
 Automatically recognise named entities without manual registry entries.
@@ -791,7 +882,7 @@ for 7 days. Surface as `etherscan_entity_label` in `shield_data`.
 
 Affected: `shield_scorer.py`, `exploit_registry.py`, `score.py`, `score.py` model.
 
-### 2. Tornado Cash Contract Validation — BSC / Polygon / Arbitrum / Optimism
+### 3. Tornado Cash Contract Validation — BSC / Polygon / Arbitrum / Optimism
 **Priority: High**
 
 The `tornado_cash_contracts` table was seeded with community-sourced addresses
@@ -805,7 +896,7 @@ for BSC (5), Polygon (4), Arbitrum (2), and Optimism (1). All carry
 
 Run `invalidate_tc_cache(chain)` after any table updates to bust the 1hr Redis cache.
 
-### 3. Indirect Tornado Cash Funding Trace
+### 4. Indirect Tornado Cash Funding Trace
 **Priority: Medium**
 
 Detection path 3 (not yet implemented): detect wallets funded by known TC
@@ -819,7 +910,7 @@ withdrawal addresses one hop away. Implementation approach:
 - Flag with lower confidence than direct interaction (0.70 vs 0.99)
 - Surface as `tornado_cash_indirect` sub-flag within `tornado_cash_funded`
 
-### 4. Advanced Shield Flags
+### 5. Advanced Shield Flags
 **Priority: High**
 
 Extend Phase 1 flags with:
@@ -830,7 +921,7 @@ Extend Phase 1 flags with:
 - `dust_attack_sender` — wallet that sends sub-cent amounts to probe addresses
 - `governance_manipulation` — flash-loan-funded governance vote pattern
 
-### 3. Shield Pro Tier Launch
+### 6. Shield Pro Tier Launch
 **Priority: Medium**
 
 Productise Shield as a distinct paid add-on:
