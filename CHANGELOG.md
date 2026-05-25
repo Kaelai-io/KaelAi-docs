@@ -202,6 +202,73 @@ a production API response consumed by protocol security teams.
 
 ---
 
+#### Fix 8 — Shield mode review bot notifications use Wallet Trust Score branding
+
+**Applies to:** `services/telegram.py`
+
+The Telegram review bot notification formatter (`_format_score_alert`) used a single
+template for both Agent and Shield mode responses. In Shield mode this produced two
+branding errors:
+
+1. **`KAT Score:` label** — Shield mode notifications displayed `KAT Score: 8/100`
+   instead of `Wallet Trust Score: 8/100`. KAT Score is Agent mode product identity
+   and must not appear in Shield mode output.
+
+2. **`Type: autonomous_agent` line** — the `wallet_type` field from the base scorer
+   was displayed verbatim. In Shield mode `autonomous_agent` is not a meaningful
+   or appropriate label — wallet type classification is an Agent mode concept.
+
+**Fix:** `_format_score_alert()` now reads `scoring_mode` from the score dict and
+branches on `is_shield = scoring_mode == "shield"`:
+
+- **Score label:** `"Wallet Trust Score"` when Shield, `"KAT Score"` when Agent.
+- **Type line:** Omitted entirely in Shield mode. Agent mode retains it as
+  `Wallet Type:` (previously `Type:` — corrected label also applied).
+- **Action banners:** Shield mode gets five-tier banners (BLOCK / FLAG / REVIEW /
+  MONITOR / ALLOW) matching the Shield recommended action vocabulary. Agent mode
+  retains the existing three-tier banners (DECLINE / REVIEW / PROCEED).
+- **Risk lines:** Shield mode uses DeFi-appropriate risk labels
+  (`low_activity_profile` instead of `low_agent_fit`).
+- **Shield flags line:** Added to Shield mode notifications when flags are present
+  (e.g. `Flags: counterparty_concentration`). Not shown in Agent mode.
+
+**Confirmed:** Rescore of WUSD/GLOVE exploit wallet
+`0x88329a09428778f62bc0c8baac0997864e5a57f8` — Shield mode Telegram notification
+shows `Wallet Trust Score: 10/100`, no `Type:` line, `Flags: counterparty_concentration`.
+
+**Files changed:** `services/telegram.py`
+
+---
+
+#### Fix 9 — Registry match amount formatter handles sub-million amounts correctly
+
+**Applies to:** `services/shield_scorer.py`
+
+The `recommended_action_label` for registry-matched wallets formatted the exploit
+amount using `${amount/1e6:.0f}M` regardless of the actual amount value. For
+sub-million amounts (e.g. `$207,000`) this produced `$0M` — incorrect and
+misleading in the API response and all downstream Telegram notifications.
+
+**Fix:** The amount formatter now applies a threshold:
+
+```python
+if amount >= 1_000_000:
+    amount_s = f"${amount/1e6:.1f}M"   # e.g. $285.0M, $3.1M
+else:
+    amount_s = f"${amount/1000:.0f}K"   # e.g. $207K, $850K
+```
+
+**Before:** `REGISTRY MATCH — confirmed attacker wallet from WUSD GLOVE Exploit ($0M). Block immediately.`
+**After:** `REGISTRY MATCH — confirmed attacker wallet from WUSD GLOVE Exploit ($207K). Block immediately.`
+
+Applied to both the top-level `recommended_action_label` and the `shield_data`
+block label, which share the same formatter function.
+
+**Confirmed:** WUSD/GLOVE exploit wallet `0x88329a09428778f62bc0c8baac0997864e5a57f8`
+now returns `$207K` in `recommended_action_label` and `shield_recommended_action_label`.
+
+**Files changed:** `services/shield_scorer.py`
+
 ### Organic ALLOW Validation — Binance Hot Wallet
 
 **Date confirmed: 2026-05-23**
