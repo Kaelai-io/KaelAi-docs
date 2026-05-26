@@ -5,7 +5,7 @@ All notable changes to the KAT Score API are documented here.
 ---
 
 ## v0.3.2 — Shield Empty Wallet Handling & DeFi Language Cleanup
-**Released: 2026-05-23**
+**Released: 2026-05-23 | Updated: 2026-05-26**
 
 ### Overview
 
@@ -17,6 +17,96 @@ an unknown wallet is not the same as a dangerous one. All four fixes are live.
 ---
 
 ### What Changed
+
+#### Fix 10 — Trusted registry lookup now runs in Agent mode (not just Shield)
+
+**Applies to:** `api/v1/endpoints/score.py`
+
+**Root cause:** The `lookup_registry()` call in `score.py` was placed inside the
+`if mode == "shield":` branch, meaning Agent mode never performed a registry lookup.
+Wallets with a `registry_type = trusted` entry (such as `vitalik.eth`) were therefore
+scored purely on behavioral data in Agent mode — producing a low CCC score and
+`decline` recommendation rather than the expected trusted-registry override.
+
+**Confirmed broken behaviour:** `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`
+(vitalik.eth, `trusted` registry entry) returned **score 18 / CCC / decline** in Agent
+mode despite being in the trusted registry. `registry_checked` was absent from the
+Agent mode response entirely.
+
+**Fix:** The `registry_match = await lookup_registry(...)` call was moved **above**
+the `if mode == "shield":` block so it executes for every mode. An Agent-mode
+override block was added immediately after:
+
+- **Trusted registry match in Agent mode:** Sets `recommended_action: "proceed"`,
+  `confidence: 0.99`, `risk_flag: "trusted_registry_match"`, and attaches
+  `registry_match` + `registry_checked: True` to the response. Action label names
+  the entity and confirms registry override.
+- No change to the behavioral score or dimension scores — the registry override
+  changes the action and confidence only, not the underlying scoring.
+
+The Shield path is unaffected — it uses the same `registry_match` variable now
+resolved before both branches execute (no duplicate DB query).
+
+**Confirmed fix:** `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045` rescored in Agent
+mode post-deploy:
+
+| Field | Before | After |
+|---|---|---|
+| `recommended_action` | `decline` | `proceed` |
+| `confidence` | 0.75 | 0.99 |
+| `risk_flag` | `suspicious` | `trusted_registry_match` |
+| `registry_checked` | absent | `true` |
+| `registry_match.registry_type` | absent | `trusted` |
+| `recommended_action_label` | *behavioral decline reason* | `TRUSTED REGISTRY MATCH — vitalik.eth. Verified good actor. Ethereum co-founder. Publicly disclosed. ENS: vitalik.eth. Safe to proceed.` |
+
+**Files changed:** `api/v1/endpoints/score.py`
+
+---
+
+#### Fix 11 — Threat registry override (BLOCK) now applies in Agent mode
+
+**Applies to:** `api/v1/endpoints/score.py`
+
+**Root cause:** Same as Fix 10 — `lookup_registry()` was Shield-only. Wallets with a
+`registry_type = threat` entry were scored behaviorally in Agent mode, returning
+`low_agent_fit / review` rather than a BLOCK override. A confirmed exploit wallet was
+treated as merely a poor agent-commerce fit rather than a blocked threat.
+
+**Confirmed broken behaviour:** `0xD3FEEd5DA83D8e8c449d6CB96ff1eb06ED1cF6C7`
+(Drift Protocol Exploit attacker, `threat` registry entry, $285M) returned
+**score 22 / CCC / review / low_agent_fit** in Agent mode. No registry data in response.
+
+**Fix:** The Agent-mode override block introduced in Fix 10 also handles threat entries:
+
+- **Threat registry match in Agent mode:** Sets `recommended_action: "block"`,
+  `confidence: 0.99`, `risk_flag: "threat_registry_match"`, and attaches
+  `registry_match` + `registry_checked: True` to the response. Action label
+  names the incident, amount (using the same sub-million formatter from Fix 9),
+  and instructs immediate block.
+- Behavioral score and dimensions are preserved in the response for audit purposes —
+  only the action, confidence, and risk flag are overridden.
+
+**Design intent:** A known exploit wallet should return BLOCK in both Agent and Shield
+mode. The registry is the highest-confidence signal available and must override
+behavioral scoring regardless of mode. An exploit wallet that scores behaviorally
+ambiguous should still be blocked — the registry exists precisely for this case.
+
+**Confirmed fix:** `0xD3FEEd5DA83D8e8c449d6CB96ff1eb06ED1cF6C7` rescored in Agent
+mode post-deploy:
+
+| Field | Before | After |
+|---|---|---|
+| `recommended_action` | `review` | `block` |
+| `confidence` | 0.65 | 0.99 |
+| `risk_flag` | `low_agent_fit` | `threat_registry_match` |
+| `registry_checked` | absent | `true` |
+| `registry_match.registry_type` | absent | `threat` |
+| `registry_match.incident_name` | absent | `Drift Protocol Exploit` |
+| `recommended_action_label` | *low agent fit review reason* | `REGISTRY MATCH — confirmed attacker wallet from Drift Protocol Exploit ($285.0M). Block immediately.` |
+
+**Files changed:** `api/v1/endpoints/score.py`
+
+---
 
 #### Fix 7 — Shield mode now uses Wallet Trust Score branding throughout
 
