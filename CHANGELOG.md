@@ -1378,3 +1378,37 @@ requiring registry entries.
 
 **Affected files:** services/shield_scorer.py, services/exploit_registry.py,
 api/v1/endpoints/score.py, models/score.py (add etherscan_entity_label column to shield_data JSONB)
+
+---
+
+## v0.3.3 — Telegram notification header reflects actual recommended_action
+**Released: 2026-05-26**
+
+### Fix 14 — Agent mode Telegram banner matches recommended_action
+
+**Applies to:** `services/telegram.py`
+
+The Agent mode Telegram notification banner previously only covered three actions
+(`decline`, `review`, `proceed`) and fell back to `⚠️ REVIEW` for any unrecognised
+value. After Fix 13 added `block` as a fourth Agent mode action tier (threat registry
+only), notifications for blocked wallets were incorrectly showing `⚠️ REVIEW` instead
+of the actual action.
+
+**Fix:** Four-tier banner set for Agent mode:
+
+| Action | Banner |
+|---|---|
+| `block` | 🚫 **BLOCK** — Confirmed threat registry match. Do not interact. |
+| `decline` | 🔴 **DECLINE** — Do not proceed with this transaction |
+| `review` | ⚠️ **REVIEW** — Manual assessment recommended before proceeding |
+| `proceed` | ✅ **PROCEED** — Wallet meets trust threshold for agent commerce |
+
+Also added `threat_registry_match` and `trusted_registry_match` to the Agent mode
+risk line map, which previously fell back to `"Unknown"` for registry-matched wallets.
+
+| Risk flag | Risk line |
+|---|---|
+| `threat_registry_match` | 🚫 Risk: Confirmed threat registry match |
+| `trusted_registry_match` | ✅ Risk: Trusted registry match — verified entity |
+
+**Files changed:** `services/telegram.py`
