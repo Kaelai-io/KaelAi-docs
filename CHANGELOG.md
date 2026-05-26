@@ -1412,3 +1412,42 @@ risk line map, which previously fell back to `"Unknown"` for registry-matched wa
 | `trusted_registry_match` | ✅ Risk: Trusted registry match — verified entity |
 
 **Files changed:** `services/telegram.py`
+
+#### Fix 15 — Telegram notifications show registry context before behavioral assessment
+
+**Applies to:** `services/telegram.py`
+
+When a score includes a `registry_match`, the Telegram notification now displays a
+dedicated registry line immediately after the score header — before the risk flag and
+behavioral reasoning. This ensures the `BLOCK` banner is contextualised by the registry
+entry rather than appearing contradictory to any "not suspicious" behavioral language
+that follows.
+
+**New registry line format:**
+- Threat match: `🔴 Registry: THREAT MATCH — {incident_name} ({amount}) — {role}`
+- Trusted match: `✅ Registry: TRUSTED MATCH — {incident_name} — {role}`
+
+**Notification structure (registry match present):**
+```
+🚫 BLOCK — Confirmed threat registry match. Do not interact.
+
+KAT Score: 22/100 — CCC | Confidence: 99% | ETH chain
+🔴 Registry: THREAT MATCH — Drift Protocol Exploit ($285.0M) — attacker
+
+🚫 Risk: Confirmed threat registry match
+Wallet Type: retail_wallet
+
+Dimensions: ...
+Reasoning: REGISTRY MATCH — confirmed attacker wallet from...
+Wallet: 0xD3FE...
+```
+
+Applies to both Agent and Shield mode. Registry line is omitted entirely when
+`registry_match` is absent or `matched` is false — no change to non-registry
+notification layout.
+
+Tested by triggering fresh notifications for `0xD3FEEd5…F6C7` in both modes.
+Agent mode: `🚫 BLOCK` + `KAT Score` branding + registry line confirmed.
+Shield mode: `🚫 BLOCK` + `Wallet Trust Score` branding + registry line confirmed.
+
+**Files changed:** `services/telegram.py`
