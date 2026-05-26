@@ -18,6 +18,118 @@ an unknown wallet is not the same as a dangerous one. All four fixes are live.
 
 ### What Changed
 
+#### Fix 12 — Agent mode: KAT Score branding corrected in docs; threat registry vocabulary + reasoning consistency fixed
+
+**Applies to:** `docs/index.html`, `api/v1/endpoints/score.py`
+
+Three related issues resolved in a single fix.
+
+---
+
+**Issue A — "Wallet Trust Score" branding in Agent mode docs (`docs/index.html`)**
+
+**Root cause:** Fix 7 updated the mode comparison table in `docs/index.html` to use
+Wallet Trust Score branding for Shield mode. In doing so, the Agent mode "Output"
+cell was accidentally changed from "KAT Score 0-100" to "Wallet Trust Score 0-100".
+The two columns share the same table row and the wrong cell was modified.
+
+Additionally, after Fixes 10 and 11 added registry checking to Agent mode, the
+"Registry check" row still showed "No" for Agent mode and the "Risk flags" row
+still showed "No" — both now stale.
+
+**Fix:**
+- `docs/index.html` Output row, Agent column: "Wallet Trust Score 0-100, grade, reasoning" → "KAT Score 0-100, grade, reasoning"
+- `docs/index.html` Registry check row, Agent column: "No" → "Yes — trusted + threat registry"
+- `docs/index.html` Risk flags row, Agent column: "No" → "registry_match (trusted / threat)"
+
+**Files changed:** `docs/index.html`
+
+---
+
+**Issue B — Agent mode threat registry used "block" (Shield vocabulary) for score 22**
+
+**Root cause:** Fix 11 applied the same BLOCK override to Agent mode that Shield mode
+uses. "Block" is Shield-mode vocabulary — the five-tier system (BLOCK / FLAG / REVIEW
+/ MONITOR / ALLOW) is Shield-specific. Agent mode uses three tiers: proceed / review /
+decline. Setting `recommended_action = "block"` in Agent mode introduced a fourth
+undocumented action value that Agent mode consumers are not designed to handle.
+
+Per the tier thresholds: in Agent mode, BLOCK should never be a behavioral outcome.
+The equivalent strongest rejection in Agent mode is "decline". A threat registry match
+should surface registry information without overriding Agent mode's own action
+vocabulary.
+
+**Fix:** The threat registry block in Agent mode no longer overrides `recommended_action`
+to `"block"`. Instead:
+
+- Behavioral `recommended_action` is preserved from the scorer (proceed / review / decline)
+- Floor applied: if behavioral scoring returned `"proceed"`, it is escalated to `"review"`
+  (a confirmed threat wallet must never return proceed)
+- `recommended_action_label` updated to reference the registry match
+- `risk_flag = "threat_registry_match"`, `confidence = 0.99`, `registry_match` all
+  still set — registry data is fully surfaced in the response
+
+**Result for score 22 / CCC:** `_compute_recommended_action("low_agent_fit", 22, ...)` →
+`"review"` (low_agent_fit + score < 30 → review). Floor check: review ≠ proceed, no
+escalation needed. Final action: **`review`**. ✅
+
+**Files changed:** `api/v1/endpoints/score.py`
+
+---
+
+**Issue C — Reasoning/action contradiction (reasoning said "not suspicious", action said BLOCK)**
+
+**Root cause:** The LLM generates behavioral reasoning before registry overrides are
+applied in `score.py`. For a threat registry wallet that scores 22 with `low_agent_fit`,
+the LLM correctly writes "this wallet scores low for agent commerce fit but shows no
+suspicious activity." After Fix 11 overrode the action to `"block"`, the response
+contained:
+
+- `reasoning`: *"...shows no suspicious activity..."*
+- `recommended_action`: `"block"`
+
+This is a direct contradiction. The same issue existed for the trusted registry
+(vitalik.eth): `reasoning` said "red flags detected" while `recommended_action` was
+`"proceed"`.
+
+**Fix:** Registry overrides in Agent mode now also override `reasoning` to prepend an
+explicit registry match statement. This ensures reasoning and action are always
+consistent:
+
+**Threat registry:** Reasoning is prepended with:
+> *"THREAT REGISTRY MATCH — {incident} ({amount}). This wallet is a confirmed attacker
+> address in the KAT threat registry. Behavioral score: {score}/100 ({grade}).
+> Behavioral assessment: {original_reasoning}"*
+
+**Trusted registry:** Reasoning is replaced with:
+> *"TRUSTED REGISTRY MATCH — {identity}. Verified good actor: registry override applied
+> at 0.99 confidence. Behavioral score is {score}/100 ({grade}) — behavioral analysis is
+> inconclusive for verified public entities whose transaction patterns are atypical by
+> nature. Safe to proceed."*
+
+**Confirmed fix — Drift wallet `0xD3FE…F6C7`:**
+
+| Field | Before (Fix 11) | After (Fix 12) |
+|---|---|---|
+| `recommended_action` | `block` | `review` |
+| `reasoning` starts with | "This wallet scores low for agent commerce fit but shows no suspicious activity..." | "THREAT REGISTRY MATCH — Drift Protocol Exploit ($285.0M). This wallet is a confirmed attacker address..." |
+| Reasoning/action consistent? | ❌ No | ✅ Yes |
+| `risk_flag` | `threat_registry_match` | `threat_registry_match` |
+| `confidence` | 0.99 | 0.99 |
+| Registry data in response | ✅ | ✅ |
+
+**Confirmed fix — vitalik.eth `0xd8dA…`:**
+
+| Field | Before (Fix 12) | After (Fix 12) |
+|---|---|---|
+| `recommended_action` | `proceed` | `proceed` |
+| `reasoning` starts with | "This wallet exhibits red flags..." | "TRUSTED REGISTRY MATCH — vitalik.eth. Verified good actor..." |
+| Reasoning/action consistent? | ❌ No | ✅ Yes |
+
+**Files changed:** `api/v1/endpoints/score.py`
+
+---
+
 #### Fix 10 — Trusted registry lookup now runs in Agent mode (not just Shield)
 
 **Applies to:** `api/v1/endpoints/score.py`
