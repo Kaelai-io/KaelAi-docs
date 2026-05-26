@@ -1384,7 +1384,7 @@ api/v1/endpoints/score.py, models/score.py (add etherscan_entity_label column to
 ## v0.3.3 — Telegram notification header reflects actual recommended_action
 **Released: 2026-05-26**
 
-### Fix 14 — Agent mode Telegram banner matches recommended_action
+#### Fix 14 — Agent mode Telegram banner matches recommended_action
 
 **Applies to:** `services/telegram.py`
 
@@ -1413,6 +1413,8 @@ risk line map, which previously fell back to `"Unknown"` for registry-matched wa
 
 **Files changed:** `services/telegram.py`
 
+---
+
 #### Fix 15 — Telegram notifications show registry context before behavioral assessment
 
 **Applies to:** `services/telegram.py`
@@ -1424,8 +1426,11 @@ entry rather than appearing contradictory to any "not suspicious" behavioral lan
 that follows.
 
 **New registry line format:**
-- Threat match: `🔴 Registry: THREAT MATCH — {incident_name} ({amount}) — {role}`
-- Trusted match: `✅ Registry: TRUSTED MATCH — {incident_name} — {role}`
+
+| Match type | Line |
+|---|---|
+| Threat | 🔴 **Registry:** THREAT MATCH — {incident_name} ({amount}) — {role} |
+| Trusted | ✅ **Registry:** TRUSTED MATCH — {incident_name} — {role} |
 
 **Notification structure (registry match present):**
 ```
