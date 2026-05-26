@@ -18,6 +18,69 @@ an unknown wallet is not the same as a dangerous one. All four fixes are live.
 
 ### What Changed
 
+#### Fix 13 — Agent mode four-tier action vocabulary; threat registry restores block with consistent reasoning
+
+**Applies to:** `api/v1/endpoints/score.py`, `docs/index.html`
+
+Agent mode `recommended_action` is now a defined four-tier system:
+
+| Action | Trigger |
+|---|---|
+| `proceed` | Clean behavioral score, or trusted registry match |
+| `review` | Low score, insufficient data, or suspicious behavioral patterns |
+| `decline` | High-confidence behavioral threat patterns |
+| `block` | **Confirmed threat registry match only** — behavioral scoring alone can never trigger this |
+
+`block` is a fourth action tier in Agent mode, exclusive to threat registry matches.
+Behavioral scoring cannot produce `block` — the ceiling for pure behavioral scoring
+is `decline`. This gives API consumers a reliable semantic distinction: `block` always
+means "KAT threat registry confirmed this wallet", not just "low score."
+
+**Changes:**
+
+1. **`api/v1/endpoints/score.py`** — Threat registry override in Agent mode now sets
+   `recommended_action = "block"` (restoring the original Fix 11 intent). The Fix 12
+   downgrade to `review` is reversed. However, the Fix 12 reasoning override is
+   retained and improved — reasoning is now prepended with:
+   > *"REGISTRY MATCH — confirmed attacker wallet from {incident} ({amount}). This
+   > address is in the KAT threat registry. Behavioral score: {score}/100 ({grade}).
+   > Behavioral assessment: {original_behavioral_reasoning}"*
+
+   This ensures action (`block`) and reasoning are always consistent — the root problem
+   Fix 12 was solving. The fix is to keep `block` AND fix the reasoning, not to
+   downgrade the action.
+
+   `recommended_action_label` for threat registry matches in Agent mode:
+   > *"REGISTRY MATCH — confirmed attacker wallet from {incident} ({amount}). Block
+   > immediately."*
+
+2. **`docs/index.html`** — Agent mode `recommended_action` field now documented as
+   four-tier. New `recommended_action` and `recommended_action_label` rows added to the
+   Agent mode response schema table. Tier descriptions:
+   - `proceed` — clean behavioral score or trusted registry match
+   - `review` — low score, insufficient data, or suspicious patterns
+   - `decline` — high-confidence behavioral threat patterns
+   - `block` — confirmed threat registry match only (never behavioral)
+
+   Shield mode Output cell corrected to "Wallet Trust Score 0-100 + five-tier action +
+   threat classification" (Agent cell already corrected in Fix 12).
+
+**Confirmed — rescore post-deploy:**
+
+| Wallet | Action | Risk Flag | Label | Contradiction? |
+|---|---|---|---|---|
+| Binance `0x47ac…` | `proceed` | `low_agent_fit` | *(behavioral)* | ✅ None |
+| vitalik.eth `0xd8dA…` | `proceed` | `trusted_registry_match` | TRUSTED REGISTRY MATCH | ✅ None |
+| Drift `0xD3FE…` | **`block`** | `threat_registry_match` | REGISTRY MATCH — confirmed attacker wallet from Drift Protocol Exploit ($285.0M). Block immediately. | ✅ None |
+
+Reasoning for Drift wallet begins: *"REGISTRY MATCH — confirmed attacker wallet from
+Drift Protocol Exploit ($285.0M). This address is in the KAT threat registry..."* —
+fully consistent with `block` action.
+
+**Files changed:** `api/v1/endpoints/score.py`, `docs/index.html`
+
+---
+
 #### Fix 12 — Agent mode: KAT Score branding corrected in docs; threat registry vocabulary + reasoning consistency fixed
 
 **Applies to:** `docs/index.html`, `api/v1/endpoints/score.py`

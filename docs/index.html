@@ -65,7 +65,7 @@
           <tr>
             <td>Output</td>
             <td>KAT Score 0-100, grade, reasoning</td>
-            <td>Five-tier action + threat classification</td>
+            <td>Wallet Trust Score 0-100 + five-tier action + threat classification</td>
           </tr>
           <tr>
             <td>Weight system</td>
@@ -284,6 +284,16 @@
                 <td><code>dimensions.value_stability</code></td>
                 <td>integer</td>
                 <td>VS score 0-100 - transaction value variance and patterns</td>
+              </tr>
+              <tr>
+                <td><code>recommended_action</code></td>
+                <td>string</td>
+                <td>Four-tier action: <code>proceed</code> (clean score or trusted registry) / <code>review</code> (low score, insufficient data, or suspicious) / <code>decline</code> (high-confidence behavioral threat) / <code>block</code> (confirmed threat registry match only — never triggered by behavioral scoring alone)</td>
+              </tr>
+              <tr>
+                <td><code>recommended_action_label</code></td>
+                <td>string</td>
+                <td>Plain-English explanation of the recommended action</td>
               </tr>
               <tr>
                 <td><code>recommendation</code></td>
